@@ -40,12 +40,6 @@ function trim(str){
 	return str.slice(0, i + 1);
 }
 
-function only(obj, properties) {
-  var result = {};
-  for (var i = 0, property;; property = properties[i++]) if (obj[property]) result[property] = obj[property];
-  return result;
-}
-
 CSS.camelCase = function(string){
 	return ('' + string).replace(camelCaseSearch, camelCaseReplace)
 }

@@ -190,26 +190,19 @@ CSS.parser = x
 ,	'cssText'
 );
 
-
-var getValueRegex = (function() {
-  var stack = [];
-  return function(depth) {
-    if (!stack[depth]) stack[depth] = x(CSS.value);
-    return stack[depth];
-  }
-})();
-
-CSS.translate = function(value, depth) {
-  var found, whitespace, result = [], scope = result, depth = depth || 0;
-  var regex = getValueRegex(depth);
+CSS.translate = function(value) {
+  var found, whitespace, result = [], matched = [], scope = result, depth = depth || 0;
+  var regex = CSS.value;
   var names = regex.names;
   
-  while (found = regex.exec(value)) { 
+  while (found = regex.exec(value)) matched.push(found);
+  for (var i = 0; found = matched[i++];) {
     var length = result.length;
     if (found[names.comma] && !length) continue //throw "comma in the beginning?"  
     
-    var number = found[names.number]
-    if (number) {
+    var number = found[names.number];
+    if (number != null) {
+      number = (found[names.phloat] != null) ? parseFloat(number) : parseInt(number)
       var unit = found[names.unit]
       scope.push(unit ? {unit: unit, number: number} : number)
       continue;
@@ -227,10 +220,11 @@ CSS.translate = function(value, depth) {
       scope = result;
       continue;
     }
+    
     var func = found[names.func];
     if (func) {
       var obj = {};
-      obj[func] = CSS.translate(found[names._arguments], depth + 1)
+      obj[func] = CSS.translate(found[names._arguments])
       scope.push(obj)
       continue
     }
@@ -246,8 +240,9 @@ CSS.translate = function(value, depth) {
 }
 
 ;(CSS.integer = x('-?\\d+'))
-;(CSS.phloat = x('-?\\d+(?:\\.\\d*)?'))
-;(CSS.number = x([CSS.phloat], "number"))
+;(CSS.phloat = x('-?\\d+\\.\\d*?'))
+;(CSS.number = x(['((', CSS.phloat , ')', OR, '(', CSS.integer, '))']))
+.names =          ['number', 'phloat',             'integer']
 
 ;(CSS.unit = x(['em|px|%|fr'], 'unit'))
 ;(CSS.length = x([CSS.number, CSS.unit, "?"]))

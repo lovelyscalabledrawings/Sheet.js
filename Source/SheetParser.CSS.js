@@ -40,6 +40,12 @@ function trim(str){
 	return str.slice(0, i + 1);
 }
 
+function only(obj, properties) {
+  var result = {};
+  for (var i = 0, property;; property = properties[i++]) if (obj[property]) result[property] = obj[property];
+  return result;
+}
+
 CSS.camelCase = function(string){
 	return ('' + string).replace(camelCaseSearch, camelCaseReplace)
 }
@@ -188,7 +194,90 @@ CSS.parser = x
 	,	x(CSS.keyValue)
 	]
 ,	'cssText'
-)
+);
 
+
+CSS.translate = function(value) {
+  var found, whitespace, result = [], scope = result;
+  var regex = x(CSS.value);
+  var names = regex.names;
+  
+  while (found = regex.exec(value)) { 
+    var length = result.length;
+    if (found[names.comma] && !length) continue //throw "comma in the beginning?"  
+    
+    var number = found[names.number]
+    if (number) {
+      var unit = found[names.unit]
+      scope.push(unit ? {unit: unit, number: number} : number)
+      continue;
+    } 
+    
+    if (found[names.whitespace] && !whitespace) {
+      whitespace = true;
+      scope = [result[length - 1]];
+      result.splice(length - 1, 1, scope)
+      continue;
+    }
+    
+    if (found[names.comma]) {
+      whitespace = false;
+      scope = result;
+      continue;
+    }
+    var func = found[names.func];
+    if (func) {
+      var obj = {};
+      obj[func] = CSS.translate(found[names._arguments])
+      scope.push(obj)
+      continue
+    }
+    
+    var text = found[names.hex] || found[names.text] || found[names.direction];
+    if (text) {
+      scope.push(text);
+      continue
+    }
+  }
+  
+  return result.length == 1 ? result[0] : result;
+}
+
+;(CSS.integer = x('-?\\d+'))
+;(CSS.phloat = x('-?\\d+(?:\\.\\d*)?'))
+;(CSS.number = x([CSS.phloat], "number"))
+
+;(CSS.unit = x(['em|px|%|fr'], 'unit'))
+;(CSS.length = x([CSS.number, CSS.unit, "?"]))
+
+;(CSS.direction = x(['top|left|bottom|right|center'], 'direction'))
+;(CSS.position = x([CSS.length, OR, CSS.direction]), 'position')
+
+;(CSS.func = x("([-a-zA-Z0-9]+)\\((" + rRound + "*)\\)"))
+.names = [      'func', '_arguments'];
+
+;(CSS.hex = x(["#[0-9a-f]{3,6}"], 'hex'));
+
+CSS.comma = x(["\\s*,\\s*"], 'comma');
+CSS.whitespace = x(["\\s+"], 'whitespace');
+
+CSS.text = x([CSS.string, OR, "(?:[-a-zA-Z0-9]+)"], "text")
+
+
+CSS.value = x
+(
+	[	x(CSS.hex)
+	, OR
+	, x(CSS.func),
+	, OR
+	, x(CSS.position)
+	,	OR
+	, x(CSS.comma)
+	, OR
+	, x(CSS.whitespace)
+	, OR
+	, x(CSS.text)
+	]
+)
 
 })(typeof exports != 'undefined' ? exports : this);

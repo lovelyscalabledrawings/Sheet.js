@@ -240,7 +240,7 @@ CSS.translate = function(value) {
 }
 
 ;(CSS.integer = x('-?\\d+'))
-;(CSS.phloat = x('-?\\d+\\.\\d*?'))
+;(CSS.phloat = x('-?\\d+\\.\\d*'))
 ;(CSS.number = x(['((', CSS.phloat , ')', OR, '(', CSS.integer, '))']))
 .names =          ['number', 'phloat',             'integer']
 

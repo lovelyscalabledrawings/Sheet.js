@@ -191,9 +191,17 @@ CSS.parser = x
 );
 
 
-CSS.translate = function(value) {
-  var found, whitespace, result = [], scope = result;
-  var regex = x(CSS.value);
+var getValueRegex = (function() {
+  var stack = [];
+  return function(depth) {
+    if (!stack[depth]) stack[depth] = x(CSS.value);
+    return stack[depth];
+  }
+})();
+
+CSS.translate = function(value, depth) {
+  var found, whitespace, result = [], scope = result, depth = depth || 0;
+  var regex = getValueRegex(depth);
   var names = regex.names;
   
   while (found = regex.exec(value)) { 
@@ -222,7 +230,7 @@ CSS.translate = function(value) {
     var func = found[names.func];
     if (func) {
       var obj = {};
-      obj[func] = CSS.translate(found[names._arguments])
+      obj[func] = CSS.translate(found[names._arguments], depth + 1)
       scope.push(obj)
       continue
     }

@@ -30,9 +30,10 @@ provides : SheetParser.Value
 
     while (found = regex.exec(value)) matched.push(found);
     for (var i = 0; found = matched[i++];) {
-      var length = result.length;
+    console.log(found[names.number], found[names.float], names.number, found[names.float ], found)
+      var length = scope.length;
       if ((number = found[names.number]) != null) {
-        number = (found[names['float']] != null) ? parseFloat(number) : parseInt(number)
+        number = (found[names.float] != null) ? parseFloat(number) : parseInt(number)
         var unit = found[names.unit]
         scope.push(unit ? {unit: unit, number: number} : number)
       } else if (found[names.whitespace] && !whitespace) {
@@ -40,8 +41,7 @@ provides : SheetParser.Value
         scope = [result[length - 1]];
         result.splice(length - 1, 1, scope)
       } else if (found[names.comma]) {
-        if (length == 0) throw "Comma in the beginning";
-        if (i == result.length) throw "Comma in the end";
+        if (length == 0 || matched.length == i) throw "Unexpected comma";
         whitespace = false;
         scope = result;
       } else if (func = found[names['function']]) {
@@ -69,9 +69,9 @@ provides : SheetParser.Value
   ;(Value['function'] = x("([-a-zA-Z0-9]+)\\((" + rRound + "*)\\)"))
   .names = [      'function', '_arguments']
   
-  ;(Value.integer = x(/-?\d+/, 'number'))
-  ;(Value['float'] = x(/-?\d+\.\d*/, 'float'))
-  ;(Value.number = x([Value['float'],  OR, Value.integer], 'number'))
+  ;(Value.integer = x(/-?\d+/, 'integer'))
+  ;(Value.float = x(/-?\d+\.\d*/, 'float'))
+  ;(Value.number = x([Value.float,  OR, Value.integer], 'number'))
 
   ;(Value.unit = x(/em|px|%|fr/, 'unit'))
   ;(Value.length = x([Value.number, Value.unit, "?"]))
@@ -94,7 +94,7 @@ provides : SheetParser.Value
     , x(Value['function']),
     , OR
     , x(Value.position)
-    ,  OR
+    , OR
     , x(Value.comma)
     , OR
     , x(Value.whitespace)

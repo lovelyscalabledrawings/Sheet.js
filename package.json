@@ -49,6 +49,7 @@
 	"sources": [
 		"Source/Sheet.js",
 		"Source/SheetParser.CSS.js",
+		"Source/SheetParser.Value.js",
 		"Source/sg-regex-tools.js"
 	],
 

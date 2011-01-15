@@ -32,8 +32,8 @@ provides : SheetParser.Value
     for (var i = 0; found = matched[i++];) {
       var length = scope.length;
       if ((number = found[names.number]) != null) {
-        number = (found[names.float] != null) ? parseFloat(number) : parseInt(number)
-        var unit = found[names.unit]
+        var unit = found[names.unit];
+        number = parseFloat(number);
         scope.push(unit ? {unit: unit, number: number} : number)
       } else if (found[names.whitespace] && !whitespace) {
         whitespace = true;
@@ -68,15 +68,15 @@ provides : SheetParser.Value
   ;(Value['function'] = x("([-a-zA-Z0-9]+)\\((" + rRound + "*)\\)"))
   .names = [      'function', '_arguments']
   
-  ;(Value.integer = x(/-?\d+/, 'integer'))
-  ;(Value.float = x(/-?\d+\.\d*/, 'float'))
-  ;(Value.number = x([Value.float,  OR, Value.integer], 'number'))
+  ;(Value.integer = x(/-?\d+/))
+  ;(Value.float = x(/-?\d+\.\d*/))
+  ;(Value.number = x(['(', Value.float,  OR, Value.integer, ')'])).names = ['number']
 
   ;(Value.unit = x(/em|px|%|fr/, 'unit'))
   ;(Value.length = x([Value.number, Value.unit, "?"]))
 
   ;(Value.direction = x(/top|left|bottom|right|center/, 'direction'))
-  ;(Value.position = x([Value.length, OR, Value.direction], 'position'))
+  ;(Value.position = x([Value.length, OR, Value.direction]))
 
   ;(Value.hex = x(/#[0-9a-f]{3,6}/, 'hex'))
 

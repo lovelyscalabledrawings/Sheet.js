@@ -30,7 +30,6 @@ provides : SheetParser.Value
 
     while (found = regex.exec(value)) matched.push(found);
     for (var i = 0; found = matched[i++];) {
-    console.log(found[names.number], found[names.float], names.number, found[names.float ], found)
       var length = scope.length;
       if ((number = found[names.number]) != null) {
         number = (found[names.float] != null) ? parseFloat(number) : parseInt(number)

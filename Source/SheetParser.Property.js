@@ -28,28 +28,24 @@ provides : SheetParser.Property
     
   };
   
-  Property.shorthand = function(properties, optional, keywords) {
-    var total = properties.length;
+  Property.shorthand = function(properties, keywords, optional) {
     for (var i = 0, property; property = properties[i++];) if (property.push) {
       if (!optional) optional = [];
-      optional.push.apply(optional, property)
+      optional.push.apply(optional, properties.splice(i - 1, 1)[0])
     }
-    var count = properties.length
+    var req = properties.length, opt = optional ? optional.length : 0;
     return function() {
-      var length = arguments.length;
-      var result = Array(arguments);
-      if (length < count || length > total) return false;
+      var length = arguments.length, result = Array(length);
+      if (length < req || length > (req + opt)) return false;
       for (var i = 0, property; property = properties[i++];) 
         for (var j = 0, args = arguments, arg; arg = args[j++];) 
-          if (Properties[property](arg)) result[i - 1] = property;
-
-      for (var i = 0, args = arguments, left = total - length, arg; (i < left) && (arg = args[i++]);) 
+          if (Properties[property](arg)) result[j - 1] = property;
+      for (var i = 0, args = arguments, left = length - req, arg; (i < left) && (arg = args[i++]);) 
         for (var j = 0, property; property = optional[j++];) 
           if (Properties[property](arg)) {
             result[i - 1] = property;
             break;
           }
-      
       var object = {};
       for (var i = 0, value; value = result[i++];) {
         if (!value) return;
@@ -67,7 +63,7 @@ provides : SheetParser.Property
   }
   
   Property.compile = function(definition) {
-    var properties, keywords, types, optional;
+    var properties, keywords, types;
     for (var i = 0, bit; bit = definition[i++];) {
       if (bit.push) properties = bit;
       else if (bit.indexOf) {
@@ -78,7 +74,7 @@ provides : SheetParser.Property
       } else options = bit;
     }
     if (properties) {
-      return Property.shorthand(properties, optional, keywords)
+      return Property.shorthand(properties, keywords)
     } else {
       return Property.simple(types, keywords)
     }
@@ -110,16 +106,22 @@ provides : SheetParser.Property
       }
     },
     
-    strings: function() {
-      
+    strings: function(obj) {
+      return !!obj.indexOf
     },
     
     url: function(obj) {
       return !obj.indexOf && "url" in obj;
     },
     
-    position: function() {
-      
+    position: function(obj) {        
+      var positions = Type.position.positions;
+      if (!positions) positions = Type.position.positions = {left: 1, top: 1, bottom: 1, right: 1, center: 1}
+      return positions[obj]
+    },
+    
+    percentage: function(obj) {
+      return obj.unit == '%'
     }
   }
   
@@ -152,9 +154,9 @@ provides : SheetParser.Property
     outlineColor:   ['color'],
         
     font:           [[ ['fontStyle', 'fontVariant', 'fontWeight'], 
-                        'fontSize', ['/', 'lineHeight'], 'fontFamily']],
+                        'fontSize', [/*'/', */'lineHeight'], 'fontFamily']],
     fontStyle:      ['normal', 'italic', 'oblique', 'inherit'],
-    fontVariant:    ['normal', 'bold', 'inherit'],
+    fontVariant:    ['normal', 'small-caps', 'inherit'],
     fontWeight:     ['number', 'normal', 'bold', 'inherit'],
     fontFamily:     ['strings', 'inherit'],
     fontSize:       ['length', 'percentage', 'inherit', 
@@ -193,16 +195,14 @@ provides : SheetParser.Property
 
   var expanded = ['borderWidth', 'borderColor', 'borderStyle', 'padding', 'margin'];
   for (var side, sides = ['Top', 'Right', 'Bottom', 'Left'], i = 0; side = sides[i++];) {
-    Styles['border' + side] = [
-      ['border' + side + 'Width', 'border' + side + 'Style', 'border' + side + 'Color']
-    ];
+    Styles['border' + side]           = [['border' + side + 'Width', 'border' + side + 'Style', 'border' + side + 'Color']];
   
     Styles['border' + side + 'Width'] = ['length', 'thin', 'thick', 'medium'];
     Styles['border' + side + 'Style'] = ['none', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset', 'inherit', 'none'];
     Styles['border' + side + 'Color'] = ['color'];
   
-    Styles['margin' + side] = ['length', 'percentage', 'auto'];
-    Styles['padding' + side] = ['length', 'percentage', 'auto'];
+    Styles['margin' + side]           = ['length', 'percentage', 'auto'];
+    Styles['padding' + side]          = ['length', 'percentage', 'auto'];
   
     for (var j = 0, prop; prop = expanded[j++];) {
       if (!Styles[prop]) Styles[prop] = []

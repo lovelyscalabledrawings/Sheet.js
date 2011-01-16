@@ -24,31 +24,29 @@ provides : SheetParser.Value
   var Value = SheetParser.Value = {version: '1.0.2 dev'};
   
   Value.translate = function(value) {
-    var found, result = [], matched = [], scope = result, number, func, text, whitespace;
+    var found, result = [], matched = [], scope = result, number, func, text;
     var regex = Value.parse;
     var names = regex.names;
 
     while (found = regex.exec(value)) matched.push(found);
     for (var i = 0; found = matched[i++];) {
-      var length = scope.length;
       if ((number = found[names.number]) != null) {
         var unit = found[names.unit];
         number = parseFloat(number);
         scope.push(unit ? {unit: unit, number: number} : number)
-      } else if (found[names.whitespace] && !whitespace) {
-        whitespace = true;
-        scope = [result[length - 1]];
-        result.splice(length - 1, 1, scope)
-      } else if (found[names.comma]) {
-        if (length == 0 || matched.length == i) throw "Unexpected comma";
-        whitespace = false;
-        scope = result;
       } else if (func = found[names['function']]) {
         var obj = {};
-        obj[func] = Value.translate(found[names._arguments])
+        var translated = obj[func] = Value.translate(found[names._arguments]);
+        for (var j = 0, bit; bit = translated[j]; j++) if (bit && bit.length == 1) translated[j] = bit[0];
         scope.push(obj);
       } else if ((text = found[names.hex] || found[names.string] || found[names.keyword] || found[names.direction])) {
         scope.push(text);
+      } else if (found[names.comma]) {
+        if (!result[0].push) result = [result];
+        result.push(scope = []);
+      } else if (found[names.whitespace]) {
+        var length = scope.length;
+        if (length && (scope == result) && !scope[length - 1].push) scope = scope[length - 1] = [scope[length - 1]];
       }
     }
     return result.length == 1 ? result[0] : result;
@@ -59,18 +57,19 @@ provides : SheetParser.Value
   var rRound = "(?:[^()]|\\((?:[^()]|\\((?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\))*\\))*\\))";
 
   ;(Value.stringSingle = x(/"((?:[^"]|\\")*)"/))
-  .names = [               'string']
+  .names = [                 'string']
   ;(Value.stringDouble = x(/'((?:[^']|\\')*)'/))
-  .names = [               'string']
+  .names = [                 'string']
   
   ;(Value.string = x([Value.stringSingle, OR, Value.stringDouble]))
   
   ;(Value['function'] = x("([-a-zA-Z0-9]+)\\((" + rRound + "*)\\)"))
-  .names = [      'function', '_arguments']
+  .names = [               'function',       '_arguments']
   
   ;(Value.integer = x(/-?\d+/))
   ;(Value.float = x(/-?\d+\.\d*/))
-  ;(Value.number = x(['(', Value.float,  OR, Value.integer, ')'])).names = ['number']
+  ;(Value.number = x(['(', Value.float,  OR, Value.integer, ')']))
+  .names = [           'number']
 
   ;(Value.unit = x(/em|px|%|fr/, 'unit'))
   ;(Value.length = x([Value.number, Value.unit, "?"]))
@@ -81,7 +80,7 @@ provides : SheetParser.Value
   ;(Value.hex = x(/#[0-9a-f]{3,6}/, 'hex'))
 
   ;(Value.comma = x(/\s*,\s*/, 'comma'))
-  ;(Value.whitespace = x(/\\s+/, 'whitespace'))
+  ;(Value.whitespace = x(/\s+/, 'whitespace'))
 
   ;(Value.keyword = x(/[-a-zA-Z0-9]+/, "keyword"))
 

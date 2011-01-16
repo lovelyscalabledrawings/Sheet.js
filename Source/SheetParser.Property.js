@@ -28,7 +28,7 @@ provides : SheetParser.Property
     
   };
   
-  Property.shorthand = function(name, properties, optional, keywords) {
+  Property.shorthand = function(properties, optional, keywords) {
     var total = properties.length;
     for (var i = 0, property; property = properties[i++];) if (property.push) {
       if (!optional) optional = [];
@@ -41,25 +41,32 @@ provides : SheetParser.Property
       if (length < count || length > total) return false;
       for (var i = 0, property; property = properties[i++];) 
         for (var j = 0, args = arguments, arg; arg = args[j++];) 
-          if (Styles[property](arg)) result[j - 1] = property;
+          if (Properties[property](arg)) result[i - 1] = property;
 
       for (var i = 0, args = arguments, left = total - length, arg; (i < left) && (arg = args[i++]);) 
         for (var j = 0, property; property = optional[j++];) 
-          if (Styles[property](arg)) {
-            result[j - 1] = property;
+          if (Properties[property](arg)) {
+            result[i - 1] = property;
             break;
           }
+      
+      var object = {};
+      for (var i = 0, value; value = result[i++];) {
+        if (!value) return;
+        object[value] = arguments[i - 1];
+      }
+      return object;
     }
   };
   
-  Property.simple = function(name, types, keywords) {
+  Property.simple = function(types, keywords) {
     return function(value) {
-      if (types) for (var i = 0, type; type = types[i++];) if (type(value)) return true;
-      if (keywords) keywords[value]
+      if (types) for (var i = 0, type; type = types[i++];) if (Type[type](value)) return true;
+      if (keywords && keywords[value]) return true;
     }
   }
   
-  Property.compile = function(name, definition) {
+  Property.compile = function(definition) {
     var properties, keywords, types, optional;
     for (var i = 0, bit; bit = definition[i++];) {
       if (bit.push) properties = bit;
@@ -71,20 +78,20 @@ provides : SheetParser.Property
       } else options = bit;
     }
     if (properties) {
-      return Property.shorthand(name, properties, optional, keywords)
+      return Property.shorthand(properties, optional, keywords)
     } else {
-      return Property.simple(name, types, keywords)
+      return Property.simple(types, keywords)
     }
   };
   
   
   var Type = Property.Type = {
     length: function(obj) {
-      return typeof obj == 'number'
+      return typeof obj == 'number' || (!obj.indexOf && ('number' in obj))
     },
   
     color: function(obj) {
-      return ('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj)
+      return !obj.indexOf && (('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj))
     },
     
     number: function(obj) {
@@ -108,7 +115,7 @@ provides : SheetParser.Property
     },
     
     url: function(obj) {
-      return "url" in obj
+      return !obj.indexOf && "url" in obj;
     },
     
     position: function() {
@@ -137,7 +144,7 @@ provides : SheetParser.Property
     boxShadowBlur:     ['length'],
     boxShadowOffsetX:  ['length'],
     boxShadowOffsetY:  ['length'],
-    boxShadowColor:    ['color'],
+    boxShadowColor:    ['color'], 
     
     outline:        ['outlineWidth', 'outlineStyle', 'outlineColor'],
     outlineWidth:   ['length'],
@@ -182,7 +189,7 @@ provides : SheetParser.Property
     zIndex:     ['integer'],
     cursor:     ['auto', 'crosshair', 'default', 'hand', 'move', 'e-resize', 'ne-resize', 'nw-resize', 
                  'n-resize', 'se-resize', 'sw-resize', 's-resize', 'w-resize', 'text', 'wait', 'help'],
-  }
+  };
 
   var expanded = ['borderWidth', 'borderColor', 'borderStyle', 'padding', 'margin'];
   for (var side, sides = ['Top', 'Right', 'Bottom', 'Left'], i = 0; side = sides[i++];) {
@@ -205,6 +212,9 @@ provides : SheetParser.Property
     if (i % 2 == 0) 
       for (var j = 1, prop, adj; adj = sides[j+=2];) 
         Styles[prop = 'borderRadius' + side + adj] = ['length', 'none'];
-  }
+  };
+  
+  var Properties = SheetParser.Properties = {};
+  for (var property in Styles) Properties[property] = Property.compile(Styles[property]);
   
 })(typeof exports != 'undefined' ? exports : this);

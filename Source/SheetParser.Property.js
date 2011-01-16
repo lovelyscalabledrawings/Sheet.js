@@ -21,41 +21,94 @@ provides : SheetParser.Property
   var SheetParser = exports.SheetParser
   /*</CommonJS>*/
   
-  var Property = SheetParser.Property = {version: '1.0.2 dev'};
+  var Property = SheetParser.Property = {version: '0.2 dev'};
   
   
-  Property.expand = function() {
+  Property.expand = function(name) {
     
   };
   
+  Property.shorthand = function(name, properties, optional, keywords) {
+   var total = properties.length;
+    for (var i = 0, property; property = properties[i++]) if (property.push) {
+      if (!optional) optional = [];
+      optional.push.apply(optional, property)
+    }
+    var count = properties.length
+    return function() {
+      var length = arguments.length;
+      var result = Array(arguments);
+      if (length < count || length > total) return false;
+      for (var i = 0, property; property = properties[i++]) 
+        for (var j = 0, args = arguments, arg; arg = args[j++]) 
+          if (Styles[property](arg)) result[j - 1] = property;
+
+      for (var i = 0, args = arguments, left = total - length, arg; (i < left) && (arg = args[i++]);) 
+        for (var j = 0, property; property = optional[j++]) 
+          if (Styles[property](arg)) {
+            result[j - 1] = property;
+            break;
+          }
+    }
+  };
   
-  Property.Type = {
-    length: function() {
+  Property.simple = function(name, types, keywords) {
+    return function(value) {
+      if (types) for (var i = 0, type; type = types[i++];) if (type(value)) return true;
+      if (keywords) keywords[value]
+    }
+  }
   
+  Property.compile = function(name, definition) {
+    var properties, keywords, types, optional;
+    for (var i = 0, bit; bit = definition[i++];) {
+      if (bit.push) properties = bit;
+      else if (bit.indexOf) {
+        if (!Type[bit]) {
+          if (!keywords) keywords = {};
+          keywords[bit] = 1;
+        } else types ? types.push(bit) : (types = [bit]);
+      } else options = bit;
+    }
+    if (properties) {
+      return Property.shorthand(name, properties, optional, keywords)
+    } else {
+      return Property.simple(name, types, keywords)
+    }
+  };
+  
+  
+  var Type = Property.Type = {
+    length: function(obj) {
+      return typeof obj == 'number'
     },
   
     color: function(obj) {
-      return obj 
+      return ('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj)
     },
     
-    number: function() {
-      
+    number: function(obj) {
+      return typeof obj == 'number'
     },
     
-    integer: function() {
-      
+    integer: function(obj) {
+      return obj % 1 == 0
     },
   
-    keyword: function() {
-  
+    keyword: function(keywords) {
+      var storage;
+      for (var i = 0, keyword; keyword = keywords[i++];) storage[keyword] = 1;
+      return function(keyword) {
+        return !!storage[keyword]
+      }
     },
     
     strings: function() {
       
     },
     
-    url: function() {
-      
+    url: function(obj) {
+      return "url" in obj
     },
     
     position: function() {
@@ -64,28 +117,35 @@ provides : SheetParser.Property
   }
   
   var Styles = Property.Styles = {
-    background: [
-      ['backgroundColor', 'backgroundImage', 'backgroundRepeat', 'backgroundAttachment', 'backgroundPosition']
-    ],
-    backgroundColor: ['color', 'transparent', 'inherit'],
-    backgroundImage: ['url', 'none', 'inherit'],
-    backgroundRepeat: ['repeat', 'no-repeat', 'repeat-x', 'repeat-y', 'inherit'],
+    background:           [['backgroundColor', 'backgroundImage', 'backgroundRepeat', 
+                            'backgroundAttachment', 'backgroundPosition']],
+    backgroundColor:      ['color', 'transparent', 'inherit'],
+    backgroundImage:      ['url', 'none', 'inherit'],
+    backgroundRepeat:     ['repeat', 'no-repeat', 'repeat-x', 'repeat-y', 'inherit'],
     backgroundAttachment: ['fixed', 'scroll', 'inherit'],
-    backgroundPosition: [['backgroundPositionX', 'backgroundPositionY']],
-    backgroundPositionX: ['position', 'inherit'],
-    backgroundPositionY: ['position', 'inherit'],
+    backgroundPosition:   [['backgroundPositionX', 'backgroundPositionY']],
+    backgroundPositionX:  ['position', 'inherit'],
+    backgroundPositionY:  ['position', 'inherit'],
+     
+    textShadow:        [['textShadowBlur', 'textShadowOffsetX', 'textShadowOffsetY', 'textShadowColor']],
+    textShadowBlur:    ['length'],
+    textShadowOffsetX: ['length'],
+    textShadowOffsetY: ['length'],
+    textShadowColor:   ['color'],
+
+    boxShadow:         [['boxShadowBlur', 'boxShadowOffsetX', 'boxShadowOffsetY', 'boxShadowColor']],
+    boxShadowBlur:     ['length'],
+    boxShadowOffsetX:  ['length'],
+    boxShadowOffsetY:  ['length'],
+    boxShadowColor:    ['color']
     
-    outline: ['outlineWidth', 'outlineStyle', 'outlineColor'],
-    outlineWidth: ['length'],
-    outlineStyle: ['dotted', 'dashed', 'solid', 'double', 'groove', 'reidge', 'inset', 'outset'],
-    outlineColor: ['color'],
+    outline:        ['outlineWidth', 'outlineStyle', 'outlineColor'],
+    outlineWidth:   ['length'],
+    outlineStyle:   ['dotted', 'dashed', 'solid', 'double', 'groove', 'reidge', 'inset', 'outset'],
+    outlineColor:   ['color'],
         
-    font: [[
-      ['fontStyle', 'fontVariant', 'fontWeight'],
-      'fontSize',
-      ['/', 'lineHeight'],
-      'fontFamily'
-    ]],
+    font:           [[ ['fontStyle', 'fontVariant', 'fontWeight'], 
+                        'fontSize', ['/', 'lineHeight'], 'fontFamily']],
     fontStyle:      ['normal', 'italic', 'oblique', 'inherit'],
     fontVariant:    ['normal', 'bold', 'inherit'],
     fontWeight:     ['number', 'normal', 'bold', 'inherit'],
@@ -108,8 +168,8 @@ provides : SheetParser.Property
     minWidth:   ['length', 'auto'],
     
     display:    ['inline', 'block', 'list-item', 'run-in', 'inline-block', 'table', 'inline-table', 'none', 
-                'table-row-group', 'table-header-group', 'table-footer-group', 'table-row', 
-                'table-column-group', 'table-column', 'table-cell', 'table-caption'],
+                 'table-row-group', 'table-header-group', 'table-footer-group', 'table-row', 
+                 'table-column-group', 'table-column', 'table-cell', 'table-caption'],
     visibility: ['visible', 'hidden'],
     float:      ['left', 'right', 'none'],
     clear:      ['none', 'left', 'right', 'both', 'inherit'],
@@ -122,28 +182,6 @@ provides : SheetParser.Property
     zIndex:     ['integer'],
     cursor:     ['auto', 'crosshair', 'default', 'hand', 'move', 'e-resize', 'ne-resize', 'nw-resize', 
                  'n-resize', 'se-resize', 'sw-resize', 's-resize', 'w-resize', 'text', 'wait', 'help'],
-                 
-    textShadow: [[
-      'textShadowBlur',
-      'textShadowOffsetX',
-      'textShadowOffsetY',
-      'textShadowColor'
-    ]],
-    textShadowBlur:    ['length'],
-    textShadowOffsetX: ['length'],
-    textShadowOffsetY: ['length'],
-    textShadowColor:   ['color'],
-
-    boxShadow: [[
-      'boxShadowBlur',
-      'boxShadowOffsetX',
-      'boxShadowOffsetY',
-      'boxShadowColor'
-    ]],
-    boxShadowBlur:    ['length'],
-    boxShadowOffsetX: ['length'],
-    boxShadowOffsetY: ['length'],
-    boxShadowColor:   ['color']
   }
 
   var expanded = ['borderWidth', 'borderColor', 'borderStyle', 'padding', 'margin'];

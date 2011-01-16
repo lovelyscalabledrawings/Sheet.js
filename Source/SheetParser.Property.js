@@ -29,8 +29,8 @@ provides : SheetParser.Property
   };
   
   Property.shorthand = function(name, properties, optional, keywords) {
-   var total = properties.length;
-    for (var i = 0, property; property = properties[i++]) if (property.push) {
+    var total = properties.length;
+    for (var i = 0, property; property = properties[i++];) if (property.push) {
       if (!optional) optional = [];
       optional.push.apply(optional, property)
     }
@@ -39,12 +39,12 @@ provides : SheetParser.Property
       var length = arguments.length;
       var result = Array(arguments);
       if (length < count || length > total) return false;
-      for (var i = 0, property; property = properties[i++]) 
-        for (var j = 0, args = arguments, arg; arg = args[j++]) 
+      for (var i = 0, property; property = properties[i++];) 
+        for (var j = 0, args = arguments, arg; arg = args[j++];) 
           if (Styles[property](arg)) result[j - 1] = property;
 
       for (var i = 0, args = arguments, left = total - length, arg; (i < left) && (arg = args[i++]);) 
-        for (var j = 0, property; property = optional[j++]) 
+        for (var j = 0, property; property = optional[j++];) 
           if (Styles[property](arg)) {
             result[j - 1] = property;
             break;
@@ -137,7 +137,7 @@ provides : SheetParser.Property
     boxShadowBlur:     ['length'],
     boxShadowOffsetX:  ['length'],
     boxShadowOffsetY:  ['length'],
-    boxShadowColor:    ['color']
+    boxShadowColor:    ['color'],
     
     outline:        ['outlineWidth', 'outlineStyle', 'outlineColor'],
     outlineWidth:   ['length'],

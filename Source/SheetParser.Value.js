@@ -59,9 +59,9 @@ provides : SheetParser.Value
   ;(Value.stringSingle = x(/"((?:[^"]|\\")*)"/))
   .names = [                 'string']
   ;(Value.stringDouble = x(/'((?:[^']|\\')*)'/))
-  .names = [                 'string']
-  
+  .names = [                 'string']  
   ;(Value.string = x([Value.stringSingle, OR, Value.stringDouble]))
+  ;(Value.keyword = x(/[-a-zA-Z0-9]+/, "keyword"))
   
   ;(Value['function'] = x("([-a-zA-Z0-9]+)\\((" + rRound + "*)\\)"))
   .names = [               'function',       '_arguments']
@@ -73,7 +73,6 @@ provides : SheetParser.Value
 
   ;(Value.unit = x(/em|px|%|fr/, 'unit'))
   ;(Value.length = x([Value.number, Value.unit, "?"]))
-
   ;(Value.direction = x(/top|left|bottom|right|center/, 'direction'))
   ;(Value.position = x([Value.length, OR, Value.direction]))
 
@@ -81,8 +80,6 @@ provides : SheetParser.Value
 
   ;(Value.comma = x(/\s*,\s*/, 'comma'))
   ;(Value.whitespace = x(/\s+/, 'whitespace'))
-
-  ;(Value.keyword = x(/[-a-zA-Z0-9]+/, "keyword"))
 
 
   Value.parse = x

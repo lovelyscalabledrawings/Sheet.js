@@ -33,13 +33,13 @@ provides : SheetParser.Value
       if ((number = found[names.number]) != null) {
         var unit = found[names.unit];
         number = parseFloat(number);
-        scope.push(unit ? {unit: unit, number: number} : number)
+        scope.push(unit ? {number: number, unit: unit} : number)
       } else if (func = found[names['function']]) {
         var obj = {};
         var translated = obj[func] = Value.translate(found[names._arguments]);
         for (var j = 0, bit; bit = translated[j]; j++) if (bit && bit.length == 1) translated[j] = bit[0];
         scope.push(obj);
-      } else if ((text = found[names.hex] || found[names.string] || found[names.keyword] || found[names.direction])) {
+      } else if ((text = found[names.hex] || found[names.string]|| found[names.dstring] || found[names.keyword] || found[names.direction])) {
         scope.push(text);
       } else if (found[names.comma]) {
         if (!result[0].push) result = [result];
@@ -56,10 +56,10 @@ provides : SheetParser.Value
   var OR = '|'
   var rRound = "(?:[^()]|\\((?:[^()]|\\((?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\))*\\))*\\))";
 
-  ;(Value.stringSingle = x(/"((?:[^"]|\\")*)"/))
-  .names = [                 'string']
-  ;(Value.stringDouble = x(/'((?:[^']|\\')*)'/))
-  .names = [                 'string']  
+  ;(Value.stringDouble = x(/"((?:[^"]|\\")*)"/))
+  .names = [                 'dstring']
+  ;(Value.stringSingle = x(/'((?:[^']|\\')*)'/))
+  .names = [                 'sstring']  
   ;(Value.string = x([Value.stringSingle, OR, Value.stringDouble]))
   ;(Value.keyword = x(/[-a-zA-Z0-9]+/, "keyword"))
   
@@ -71,7 +71,7 @@ provides : SheetParser.Value
   ;(Value.number = x(['(', Value.float,  OR, Value.integer, ')']))
   .names = [           'number']
 
-  ;(Value.unit = x(/em|px|%|fr/, 'unit'))
+  ;(Value.unit = x(/em|px|pt|%|fr/, 'unit'))
   ;(Value.length = x([Value.number, Value.unit, "?"]))
   ;(Value.direction = x(/top|left|bottom|right|center/, 'direction'))
   ;(Value.position = x([Value.length, OR, Value.direction]))

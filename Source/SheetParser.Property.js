@@ -122,7 +122,7 @@ provides : SheetParser.Property
     },
   
     color: function(obj) {
-      return obj.indexOf ? obj.match('#[a-z-0-9]{3,6}') : (('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj))
+      return obj.indexOf ? obj.match(/[0-9a-f]{3}(?:[0-9a-f]{3})?/) : (('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj))
     },
     
     number: function(obj) {

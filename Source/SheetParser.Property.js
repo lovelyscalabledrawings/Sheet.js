@@ -64,6 +64,7 @@ provides : SheetParser.Property
         if (group = property.push && property) property = properties[k + 1];
         if (Properties[property](argument)) {
           if (group) {
+            if (i - start > group.length) return false;
             for (var j = start, k = 0; j < i; j++) 
               if (!result[j])
                 for (var l = 0, optional; optional = group[l++];) 
@@ -84,6 +85,7 @@ provides : SheetParser.Property
         if (!property) return false;
         result[i] = property;
       }
+      if (i < k) return false;
       for (var i = 0, j = arguments.length, object = {}; i < j; i++) {
         var value = result[i];
         if (!value) return false;
@@ -123,7 +125,7 @@ provides : SheetParser.Property
     },
   
     color: function(obj) {
-      return obj.indexOf ? obj.match(/[0-9a-f]{3}(?:[0-9a-f]{3})?/) : (('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj))
+      return obj.indexOf ? obj.match(/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/) : (('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj))
     },
     
     number: function(obj) {

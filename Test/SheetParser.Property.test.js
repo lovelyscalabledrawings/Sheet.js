@@ -24,8 +24,10 @@ exports ["test Property parsing"] = {
     for (var property in Examples) {
       var examples = Examples[property];
       for (var input in examples) {
+        var value = SheetParser.Value.translate(input);
+        if (!value.push) value = [value];
         deepEqual(
-          SheetParser.Properties[property].apply(1, SheetParser.Value.translate(input)),
+          SheetParser.Properties[property].apply(1, value),
           examples[input]
         )        
       }
@@ -50,8 +52,18 @@ var Examples = {
     '7px Georgia': {fontSize: {number: 7, unit: 'px'}, fontFamily: 'Georgia'},
     'normal 3pt Georgia': {fontStyle: 'normal', fontSize: {number: 3, unit: 'pt'}, fontFamily: 'Georgia'},
     'normal bold medium "Tahoma"': {fontStyle: 'normal', fontWeight: 'bold', fontSize: 'medium', fontFamily: 'Tahoma'},
-    'normal italic medium "Tahoma"': {fontStyle: 'italic', fontVariant: 'normal', fontSize: 'medium', fontFamily: 'Tahoma'},
-    'bold italic medium "Tahoma"': {fontStyle: 'italic', fontWeight: 'bold', fontSize: 'medium', fontFamily: 'Tahoma'},
+    'normal italic medium "Tahoma"': {fontVariant: 'normal', fontStyle: 'italic', fontSize: 'medium', fontFamily: 'Tahoma'},
+    'bold italic medium "Tahoma"': {fontWeight: 'bold', fontStyle: 'italic', fontSize: 'medium', fontFamily: 'Tahoma'},
+    'bold italic small-caps medium "Tahoma"': {fontWeight: 'bold', fontStyle: 'italic', fontVariant: 'small-caps', fontSize: 'medium', fontFamily: 'Tahoma'},
+    
+    'Georgia 7px': false,
+    'Georgia': false,
+    '7px': false,
+    '3pt normal 3px Tahoma': false,
+    //'3pz Georgia': false - pz as fontFamily
+    //'3pt normal normal Tahoma': false, - fontFamily twice
+    
+    
     //'normal bold medium normal "Tahoma"': {fontStyle: 'normal', fontWeight: 'bold', fontSize: 'medium', lineHeight: 'normal', fontFamily: 'Tahoma'}
   }
 }

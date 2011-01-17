@@ -45,6 +45,13 @@ var Examples = {
     '1em soled rgba(1,1,1, 0.5)': false,    
     '1em solid #cccccz': false,
 //    '3px solid black': {borderTopWidth: {number: 3, unit: 'px'}, borderTopStyle: 'solid', borderTopColor: 'black'},
-    
-  }  
+  },
+  font: {
+    '7px Georgia': {fontSize: {number: 7, unit: 'px'}, fontFamily: 'Georgia'},
+    'normal 3pt Georgia': {fontStyle: 'normal', fontSize: {number: 3, unit: 'pt'}, fontFamily: 'Georgia'},
+    'normal bold medium "Tahoma"': {fontStyle: 'normal', fontWeight: 'bold', fontSize: 'medium', fontFamily: 'Tahoma'},
+    'normal italic medium "Tahoma"': {fontStyle: 'italic', fontVariant: 'normal', fontSize: 'medium', fontFamily: 'Tahoma'},
+    'bold italic medium "Tahoma"': {fontStyle: 'italic', fontWeight: 'bold', fontSize: 'medium', fontFamily: 'Tahoma'},
+    //'normal bold medium normal "Tahoma"': {fontStyle: 'normal', fontWeight: 'bold', fontSize: 'medium', lineHeight: 'normal', fontFamily: 'Tahoma'}
+  }
 }

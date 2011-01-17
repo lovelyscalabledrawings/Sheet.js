@@ -78,7 +78,7 @@ provides : SheetParser.Property
         } else if (group) {
           if (!keywords) keywords = Property.index(properties);
           property = result[i] = keywords[k][argument];
-          if (used[property]) return;
+          if (used[property]) return false;
           used[property] = 1;
           continue
         } else return false
@@ -134,7 +134,7 @@ provides : SheetParser.Property
     },
     
     integer: function(obj) {
-      return obj % 1 == 0
+      return obj % 1 == 0 && ((0 + obj).toString() == obj)
     },
   
     keyword: function(keywords) {

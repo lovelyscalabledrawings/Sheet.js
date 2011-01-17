@@ -24,7 +24,8 @@ exports ["test Value parsing"] = {
     for (var input in Examples) {
       deepEqual(
         SheetParser.Value.translate(input),
-        Examples[input]
+        Examples[input],
+        input
       )
     }
   }
@@ -35,6 +36,8 @@ exports ["test Value parsing"] = {
 var Examples = { 
   '1': 1,
   '3.5': 3.5,
+  '5f.5': '5f.5',
+  '"5f.5"': '5f.5',
   '2em': {number: 2, unit: 'em'},
   '3px': {number: 3, unit: 'px'},
   '4pt': {number: 4, unit: 'pt'},

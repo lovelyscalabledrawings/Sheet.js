@@ -26,12 +26,11 @@ exports ["test Property parsing"] = {
       for (var input in examples) {
         var value = SheetParser.Value.translate(input);
         if (!value.push) value = [value];
-        test(property + ': ' + JSON.stringify(input), function() {
-          deepEqual(
-            SheetParser.Properties[property].apply(1, value),
-            examples[input]
-          )
-        })   
+        deepEqual(
+          SheetParser.Properties[property].apply(1, value),
+          examples[input], 
+          property + ': ' + input
+        )
       }
     }
   }
@@ -45,6 +44,7 @@ var Examples = {
     '1': true,
     '999999': true,
     '-1': true,
+    '+1': false,
     'f': false,
     'none': false,
     'inherit': false,
@@ -118,7 +118,7 @@ var Examples = {
     'Georgia': false,
     '7px': false,
     '3pt normal 3px Tahoma': false,
-    //'3pz Georgia': false - pz as fontFamily
+    '3pz Georgia': false
     //'3pt normal normal Tahoma': false, - fontFamily twice
     //'normal bold medium normal "Tahoma"': {fontStyle: 'normal', fontWeight: 'bold', fontSize: 'medium', lineHeight: 'normal', fontFamily: 'Tahoma'}
   }

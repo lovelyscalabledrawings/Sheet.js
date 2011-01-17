@@ -97,8 +97,9 @@ provides : SheetParser.Property
   
   Property.simple = function(types, keywords) {
     return function(value) {
-      if (types) for (var i = 0, type; type = types[i++];) if (Type[type](value)) return true;
       if (keywords && keywords[value]) return true;
+      if (types) for (var i = 0, type; type = types[i++];) if (Type[type](value)) return true;
+      return false;
     }
   }
   

@@ -26,10 +26,12 @@ exports ["test Property parsing"] = {
       for (var input in examples) {
         var value = SheetParser.Value.translate(input);
         if (!value.push) value = [value];
-        deepEqual(
-          SheetParser.Properties[property].apply(1, value),
-          examples[input]
-        )        
+        test(property + ': ' + JSON.stringify(input), function() {
+          deepEqual(
+            SheetParser.Properties[property].apply(1, value),
+            examples[input]
+          )
+        })   
       }
     }
   }
@@ -38,6 +40,62 @@ exports ["test Property parsing"] = {
 
 
 var Examples = { 
+  zIndex: {
+    '0': true,
+    '1': true,
+    '999999': true,
+    '-1': true,
+    'f': false,
+    'none': false,
+    'inherit': false,
+    'f99999': false
+  },
+  display: {
+    'block': true,
+    'inline-block': true,
+    'bkoz': false,
+    '-moz-inline-block': false
+  },
+  color: {
+    'rgb(1, 1, 1)': true,
+    'rgba(1, 2, 1)': true,
+    'rgba(1, 2, 1, 1)': true,
+    'rgba(1, 2, 1, 1%)': true,
+    'rgba(1, 2, 1, 0.5)': true,
+    'hsb(0, 30, 100, 0.5)': true,
+    '#ccc': true,
+    '#cccccc': true,
+    '#ccccc': false,
+    'rgbo(1, 2, 1, 0.5)': false,
+    'rdb(1, 2, 1, 0.5)': false
+    //'black'
+    //'cyan'
+    
+    //'rgbo(1, 2, 1f, 0.5)': false, - arguments not validated yet
+    //'rdb(1, z, 1, 0.5)': false,
+    
+  },
+  lineHeight: {
+    'normal': true,
+    'normol': false,
+    '1': true,
+    '1.5': true,
+    '50%': true,
+    '55.4%': true,
+    '5f.5%': false,
+    'none': false
+  },
+  cursor: {
+    'sw-resize': true,
+    'ws-resize': false
+  },
+  fontWeight: {
+    '100': true,
+    'bold': true,
+    'normal': true,
+    '100%': false,
+    'big': false
+  },
   borderTop: {
     '3px solid #ccc': {borderTopWidth: {number: 3, unit: 'px'}, borderTopStyle: 'solid', borderTopColor: '#ccc'},
     '1em dotted rgba(1,1,1, 0.5)': {borderTopWidth: {number: 1, unit: 'em'}, borderTopStyle: 'dotted', borderTopColor: {rgba: [1, 1, 1, 0.5]}},
@@ -62,8 +120,6 @@ var Examples = {
     '3pt normal 3px Tahoma': false,
     //'3pz Georgia': false - pz as fontFamily
     //'3pt normal normal Tahoma': false, - fontFamily twice
-    
-    
     //'normal bold medium normal "Tahoma"': {fontStyle: 'normal', fontWeight: 'bold', fontSize: 'medium', lineHeight: 'normal', fontFamily: 'Tahoma'}
   }
 }

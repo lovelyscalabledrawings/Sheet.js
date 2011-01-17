@@ -66,7 +66,7 @@ provides : SheetParser.Property
             for (var j = start, k = 0; j < i; j++) 
               if (!result[j])
                 for (var l = 0, optional; optional = group[l++];) 
-                  if (!used[optional]) {
+                  if (!used[optional] && Properties[optional](arguments[j])) {
                     result[j] = optional;
                     break;
                   }
@@ -76,63 +76,21 @@ provides : SheetParser.Property
         } else if (group) {
           if (!keywords) keywords = Property.index(properties);
           property = result[i] = keywords[k][argument];
+          if (used[property]) return;
           used[property] = 1;
           continue
-        } else return 2
-        if (!property) return 1;
+        } else return false
+        if (!property) return false;
         result[i] = property;
       }
-      var object = {};
-      for (var i = 0, value; value = result[i++];) {
-        if (!value) return;
-        object[value] = arguments[i - 1];
+      for (var i = 0, j = arguments.length, object = {}; i < j; i++) {
+        var value = result[i];
+        if (!value) return false;
+        object[value] = arguments[i];
       }
       return object;
     }
   }
-  
-  //Property.shorthand = function(properties, keywords, optional) {
-  //  for (var i = 0, property; property = properties[i++];) if (property.push) {
-  //    if (!optional) optional = [];
-  //    optional.push.apply(optional, properties.splice(i - 1, 1)[0])
-  //  }
-  //  var req = properties.length;
-  //  if (optional) {
-  //    var opt = optional.length;
-  //    var used = {}
-  //  } else var opt = 0;
-  //  return function() {
-  //    var length = arguments.length, result = Array(length);
-  //    if (length < req || length > (req + opt)) return false;
-  //    var j = 0;
-  //    for (var i = 0, args = arguments, arg; arg = args[i++];) 
-  //      var property = properties[j]
-  //      if (Properties[property](arg)) {
-  //        j++;
-  //      } else if (optional) {
-  //        for (var l = 0; l < opt; l++) {
-  //          if (!used[])
-  //        }
-  //        property = optional[k];
-  //        if (Properties[property](arg)) k++;
-  //        else continue
-  //      }
-  //      if (property) result[i - 1] = property;
-  //    }
-  //    for (var i = 0, args = arguments, left = length - req, arg; (i < left) && (arg = args[i++]);) 
-  //      for (var j = i - 1, property; property = optional[j++];) 
-  //        if (Properties[property](arg)) {
-  //          result[i - 1] = property;
-  //          break;
-  //        }
-  //    var object = {};
-  //    for (var i = 0, value; value = result[i++];) {
-  //      if (!value) return;
-  //      object[value] = arguments[i - 1];
-  //    }
-  //    return object;
-  //  }
-  //};
   
   Property.simple = function(types, keywords) {
     return function(value) {
@@ -164,7 +122,7 @@ provides : SheetParser.Property
     },
   
     color: function(obj) {
-      return !obj.indexOf && (('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj))
+      return obj.indexOf ? obj.match('#[a-z-0-9]{3,6}') : (('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj))
     },
     
     number: function(obj) {

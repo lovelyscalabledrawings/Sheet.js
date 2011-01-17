@@ -60,6 +60,7 @@ provides : SheetParser.Property
       var result = [], used = {}, start = 0;
       for (var i = 0, k = 0, argument; argument = arguments[i]; i++) {
         var property = properties[k];
+        if (!property) return false;
         if (group = property.push && property) property = properties[k + 1];
         if (Properties[property](argument)) {
           if (group) {

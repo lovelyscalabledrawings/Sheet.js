@@ -28,24 +28,60 @@ provides : SheetParser.Property
     
   };
   
-  Property.shorthand = function(properties, keywords, optional) {
-    for (var i = 0, property; property = properties[i++];) if (property.push) {
-      if (!optional) optional = [];
-      optional.push.apply(optional, properties.splice(i - 1, 1)[0])
-    }
-    var req = properties.length, opt = optional ? optional.length : 0;
-    return function() {
-      var length = arguments.length, result = Array(length);
-      if (length < req || length > (req + opt)) return false;
-      for (var i = 0, property; property = properties[i++];) 
-        for (var j = 0, args = arguments, arg; arg = args[j++];) 
-          if (Properties[property](arg)) result[j - 1] = property;
-      for (var i = 0, args = arguments, left = length - req, arg; (i < left) && (arg = args[i++]);) 
-        for (var j = 0, property; property = optional[j++];) 
-          if (Properties[property](arg)) {
-            result[i - 1] = property;
-            break;
+  /*
+    Finds optional groups in expressions and builds keyword
+    indecies for them. Keyword index is an object that has
+    keywords as keys and values as property names.
+    
+    Index only holds keywords that can be uniquely identified
+    as one of the properties in group.
+  */
+  
+  Property.index = function(properties) {
+    var keywords = {};
+    for (var i = 0, property; property = properties[i]; i++) {
+      if (property.push) {
+        var group = keywords[i] = {};
+        for (var j = 0, prop; prop = property[j]; j++) {
+          var keys = Properties[prop].keywords;
+          if (keys) for (var key in keys) {
+            if (group[key] == null) group[key] = prop;
+            else group[key] = false;
           }
+        }
+        for (var keyword in group) if (!group[keyword]) delete group[keyword];
+      }
+    }
+    return keywords;
+  }
+  
+  Property.shorthand = function(properties, keywords) {
+    return function() {
+      var result = [], used = {}, start = 0;
+      for (var i = 0, k = 0, argument; argument = arguments[i]; i++) {
+        var property = properties[k];
+        if (group = property.push && property) property = properties[k + 1];
+        if (Properties[property](argument)) {
+          if (group) {
+            for (var j = start, k = 0; j < i; j++) 
+              if (!result[j])
+                for (var l = 0, optional; optional = group[l++];) 
+                  if (!used[optional]) {
+                    result[j] = optional;
+                    break;
+                  }
+            k += 2;
+            start = i;
+          } else k++;
+        } else if (group) {
+          if (!keywords) keywords = Property.index(properties);
+          property = result[i] = keywords[k][argument];
+          used[property] = 1;
+          continue
+        } else return 2
+        if (!property) return 1;
+        result[i] = property;
+      }
       var object = {};
       for (var i = 0, value; value = result[i++];) {
         if (!value) return;
@@ -53,7 +89,50 @@ provides : SheetParser.Property
       }
       return object;
     }
-  };
+  }
+  
+  //Property.shorthand = function(properties, keywords, optional) {
+  //  for (var i = 0, property; property = properties[i++];) if (property.push) {
+  //    if (!optional) optional = [];
+  //    optional.push.apply(optional, properties.splice(i - 1, 1)[0])
+  //  }
+  //  var req = properties.length;
+  //  if (optional) {
+  //    var opt = optional.length;
+  //    var used = {}
+  //  } else var opt = 0;
+  //  return function() {
+  //    var length = arguments.length, result = Array(length);
+  //    if (length < req || length > (req + opt)) return false;
+  //    var j = 0;
+  //    for (var i = 0, args = arguments, arg; arg = args[i++];) 
+  //      var property = properties[j]
+  //      if (Properties[property](arg)) {
+  //        j++;
+  //      } else if (optional) {
+  //        for (var l = 0; l < opt; l++) {
+  //          if (!used[])
+  //        }
+  //        property = optional[k];
+  //        if (Properties[property](arg)) k++;
+  //        else continue
+  //      }
+  //      if (property) result[i - 1] = property;
+  //    }
+  //    for (var i = 0, args = arguments, left = length - req, arg; (i < left) && (arg = args[i++]);) 
+  //      for (var j = i - 1, property; property = optional[j++];) 
+  //        if (Properties[property](arg)) {
+  //          result[i - 1] = property;
+  //          break;
+  //        }
+  //    var object = {};
+  //    for (var i = 0, value; value = result[i++];) {
+  //      if (!value) return;
+  //      object[value] = arguments[i - 1];
+  //    }
+  //    return object;
+  //  }
+  //};
   
   Property.simple = function(types, keywords) {
     return function(value) {
@@ -73,11 +152,9 @@ provides : SheetParser.Property
         } else types ? types.push(bit) : (types = [bit]);
       } else options = bit;
     }
-    if (properties) {
-      return Property.shorthand(properties, keywords)
-    } else {
-      return Property.simple(types, keywords)
-    }
+    var property = properties ? Property.shorthand(properties, keywords) : Property.simple(types, keywords);
+    if (keywords) property.keywords = keywords;
+    return property;
   };
   
   
@@ -141,7 +218,7 @@ provides : SheetParser.Property
     textShadowOffsetX: ['length'],
     textShadowOffsetY: ['length'],
     textShadowColor:   ['color'],
-
+    
     boxShadow:         [['boxShadowBlur', 'boxShadowOffsetX', 'boxShadowOffsetY', 'boxShadowColor']],
     boxShadowBlur:     ['length'],
     boxShadowOffsetX:  ['length'],
@@ -153,8 +230,12 @@ provides : SheetParser.Property
     outlineStyle:   ['dotted', 'dashed', 'solid', 'double', 'groove', 'reidge', 'inset', 'outset'],
     outlineColor:   ['color'],
         
-    font:           [[ ['fontStyle', 'fontVariant', 'fontWeight'], 
-                        'fontSize', [/*'/', */'lineHeight'], 'fontFamily']],
+    font:           [[
+                      ['fontStyle', 'fontVariant', 'fontWeight'], 
+                      'fontSize', 
+                      ['lineHeight'], 
+                      'fontFamily'
+                    ]],
     fontStyle:      ['normal', 'italic', 'oblique', 'inherit'],
     fontVariant:    ['normal', 'small-caps', 'inherit'],
     fontWeight:     ['number', 'normal', 'bold', 'inherit'],

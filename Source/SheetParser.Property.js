@@ -118,7 +118,7 @@ provides : SheetParser.Property
   
   var Type = Property.Type = {
     length: function(obj) {
-      return typeof obj == 'number' || (!obj.indexOf && ('number' in obj))
+      return typeof obj == 'number' || (!obj.indexOf && ('number' in obj) && (obj.unit != '%'))
     },
   
     color: function(obj) {

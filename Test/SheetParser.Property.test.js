@@ -43,7 +43,7 @@ var Examples = {
     
     '1.3% solid hsb(0, 0, 30, 30)': false,    
     '1em soled rgba(1,1,1, 0.5)': false,    
-    '1em solid #cccccc': false,
+    '1em solid #cccccz': false,
 //    '3px solid black': {borderTopWidth: {number: 3, unit: 'px'}, borderTopStyle: 'solid', borderTopColor: 'black'},
     
   }  

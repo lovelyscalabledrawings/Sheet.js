@@ -76,7 +76,7 @@ provides : SheetParser.Value
   ;(Value.direction = x(/top|left|bottom|right|center/, 'direction'))
   ;(Value.position = x([Value.length, OR, Value.direction]))
 
-  ;(Value.hex = x(/#[0-9a-f]{3,6}/, 'hex'))
+  ;(Value.hex = x(/#[0-9a-f]+/, 'hex'))
 
   ;(Value.comma = x(/\s*,\s*/, 'comma'))
   ;(Value.whitespace = x(/\s+/, 'whitespace'))

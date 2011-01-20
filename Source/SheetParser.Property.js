@@ -23,11 +23,6 @@ provides : SheetParser.Property
   
   var Property = SheetParser.Property = {version: '0.2 dev'};
   
-  
-  Property.expand = function(name) {
-    
-  };
-  
   /*
     Finds optional groups in expressions and builds keyword
     indecies for them. Keyword index is an object that has
@@ -53,7 +48,24 @@ provides : SheetParser.Property
       }
     }
     return keywords;
-  }
+  };
+  
+  /*
+    Simple value 
+  */
+
+  Property.simple = function(types, keywords) {
+    return function(value) {
+      if (keywords && keywords[value]) return true;
+      if (types) for (var i = 0, type; type = types[i++];) if (Type[type](value)) return true;
+      return false;
+    }
+  };
+  
+  /*
+    Links list of inambigous arguments with corresponding properties keeping
+    the order.
+  */
   
   Property.shorthand = function(properties, keywords) {
     return function() {
@@ -93,15 +105,41 @@ provides : SheetParser.Property
       }
       return object;
     }
-  }
-  
-  Property.simple = function(types, keywords) {
-    return function(value) {
-      if (keywords && keywords[value]) return true;
-      if (types) for (var i = 0, type; type = types[i++];) if (Type[type](value)) return true;
-      return false;
-    }
-  }
+  };
+
+  /*
+    A shorthand that operates on collection of properties. When given values
+    are not enough (less than properties in collection), the value sequence
+    is repeated until all properties are filled.     
+  */
+
+  Property.collection = function(properties, keywords) {
+    var first = Properties[properties[0]];
+    if (first.type != 'simple') 
+      return function(arg) {
+        var args = (!arg || !arg.push) ? [Array.prototype.slice.call(arguments)] : arguments;
+        var length = args.length;
+        var result = {};
+        for (var i = 0, property; property = properties[i]; i++) {
+          var values = Properties[property].apply(1, args[i % length]);
+          if (!values) return false;
+          console.log(args[i % length], args)
+          for (var prop in values) result[prop] = values[prop];
+        }
+        return result;
+      }
+    else
+      return function() {
+        var length = arguments.length;
+        var result = {};
+        for (var i = 0, property; property = properties[i]; i++) {
+          var values = arguments[i % length];
+          if (!Properties[property].call(1, values)) return false;
+          result[property] = values
+        }
+        return result;
+      }
+  };
   
   Property.compile = function(definition) {
     var properties, keywords, types;
@@ -114,15 +152,17 @@ provides : SheetParser.Property
         } else types ? types.push(bit) : (types = [bit]);
       } else options = bit;
     }
-    var property = properties ? Property.shorthand(properties, keywords) : Property.simple(types, keywords);
+    var type = properties ? (keywords && keywords.collection ? "collection" : "shorthand") : 'simple'
+    var property = Property[type](properties || types, keywords)
     if (keywords) property.keywords = keywords;
+    property.type = type;
     return property;
   };
   
   
   var Type = Property.Type = {
     length: function(obj) {
-      return typeof obj == 'number' || (!obj.indexOf && ('number' in obj) && (obj.unit != '%'))
+      return typeof obj == 'number' || (!obj.indexOf && ('number' in obj) && obj.unit && (obj.unit != '%'))
     },
   
     color: function(obj) {
@@ -162,9 +202,9 @@ provides : SheetParser.Property
     percentage: function(obj) {
       return obj.unit == '%'
     }
-  }
+  };
   
-  var Styles = Property.Styles = {
+  var Styles = SheetParser.Styles = {
     background:           [['backgroundColor', 'backgroundImage', 'backgroundRepeat', 
                             'backgroundAttachment', 'backgroundPosition']],
     backgroundColor:      ['color', 'transparent', 'inherit'],
@@ -236,7 +276,7 @@ provides : SheetParser.Property
                  'n-resize', 'se-resize', 'sw-resize', 's-resize', 'w-resize', 'text', 'wait', 'help'],
   };
 
-  var expanded = ['borderWidth', 'borderColor', 'borderStyle', 'padding', 'margin'];
+  var expanded = ['borderWidth', 'borderColor', 'borderStyle', 'padding', 'margin', 'border'];
   for (var side, sides = ['Top', 'Right', 'Bottom', 'Left'], i = 0; side = sides[i++];) {
     Styles['border' + side]           = [['border' + side + 'Width', 'border' + side + 'Style', 'border' + side + 'Color']];
   
@@ -248,16 +288,17 @@ provides : SheetParser.Property
     Styles['padding' + side]          = ['length', 'percentage', 'auto'];
   
     for (var j = 0, prop; prop = expanded[j++];) {
-      if (!Styles[prop]) Styles[prop] = []
-      Styles[prop].push(prop + side)
+      if (!Styles[prop]) Styles[prop] = [[]];
+      Styles[prop][0].push(prop.replace(/^([a-z]*)/, '$1' + side));
+      if (i == 4) Styles[prop].push('collection')
     }
   
     if (i % 2 == 0) 
-      for (var j = 1, prop, adj; adj = sides[j+=2];) 
-        Styles[prop = 'borderRadius' + side + adj] = ['length', 'none'];
+      for (var j = 1, adj; adj = sides[j+=2];) 
+        Styles['borderRadius' + side + adj] = ['length', 'none'];
   };
   
-  var Properties = SheetParser.Properties = {};
+  var Properties = SheetParser.Properties = {}
   for (var property in Styles) Properties[property] = Property.compile(Styles[property]);
   
 })(typeof exports != 'undefined' ? exports : this);

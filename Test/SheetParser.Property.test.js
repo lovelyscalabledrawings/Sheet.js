@@ -103,7 +103,8 @@ var Examples = {
     
     '1.3% solid hsb(0, 0, 30, 30)': false,    
     '1em soled rgba(1,1,1, 0.5)': false,    
-    '1em solid #cccccz': false,
+    '1em solid #cccccz': false,   
+    //'1 solid #ccc': false,    //unitless length is valid now
 //    '3px solid black': {borderTopWidth: {number: 3, unit: 'px'}, borderTopStyle: 'solid', borderTopColor: 'black'},
   },
   font: {
@@ -112,14 +113,62 @@ var Examples = {
     'normal bold medium "Tahoma"': {fontStyle: 'normal', fontWeight: 'bold', fontSize: 'medium', fontFamily: 'Tahoma'},
     'normal italic medium "Tahoma"': {fontVariant: 'normal', fontStyle: 'italic', fontSize: 'medium', fontFamily: 'Tahoma'},
     'bold italic medium "Tahoma"': {fontWeight: 'bold', fontStyle: 'italic', fontSize: 'medium', fontFamily: 'Tahoma'},
+    //'bold italic medium 3px "Tahoma"': {fontWeight: 'bold', fontStyle: 'italic', fontSize: 'medium', fontFamily: 'Tahoma'},
     'bold italic small-caps medium "Tahoma"': {fontWeight: 'bold', fontStyle: 'italic', fontVariant: 'small-caps', fontSize: 'medium', fontFamily: 'Tahoma'},
     
     'Georgia 7px': false,
     'Georgia': false,
     '7px': false,
     '3pt normal 3px Tahoma': false,
-    '3pz Georgia': false
-    //'3pt normal normal Tahoma': false, - fontFamily twice
+    '3pz Georgia': false,
+    //'3pt normal normal Tahoma': false,
+    'normal normal normal Tahoma': false
     //'normal bold medium normal "Tahoma"': {fontStyle: 'normal', fontWeight: 'bold', fontSize: 'medium', lineHeight: 'normal', fontFamily: 'Tahoma'}
+  },
+  
+  margin: {
+    '4px': {marginTop: {number: 4, unit: 'px'}, marginRight: {number: 4, unit: 'px'}, marginBottom: {number: 4, unit: 'px'}, marginLeft: {number: 4, unit: 'px'}},
+    '50% 4px': {marginTop: {number: 50, unit: '%'}, marginRight: {number: 4, unit: 'px'}, marginBottom: {number: 50, unit: '%'}, marginLeft: {number: 4, unit: 'px'}},
+    '4px 4px 4px': {marginTop: {number: 4, unit: 'px'}, marginRight: {number: 4, unit: 'px'}, marginBottom: {number: 4, unit: 'px'}, marginLeft: {number: 4, unit: 'px'}},
+    //'4px -4fr 4px 4px': {marginTop: {number: 4, unit: 'px'}, marginRight: {number: -4, unit: 'fr'}, marginBottom: {number: 4, unit: 'px'}, marginLeft: {number: 4, unit: 'px'}},
+
+  },
+  
+  border: {
+    '1px solid #ccc': {
+      borderTopWidth: {number: 1, unit: 'px'}, 
+      borderTopStyle: 'solid', 
+      borderTopColor: "#ccc",
+      borderRightWidth: {number: 1, unit: 'px'}, 
+      borderRightStyle: 'solid', 
+      borderRightColor: "#ccc",
+      borderBottomWidth: {number: 1, unit: 'px'}, 
+      borderBottomStyle: 'solid', 
+      borderBottomColor: "#ccc",
+      borderLeftWidth: {number: 1, unit: 'px'}, 
+      borderLeftStyle: 'solid', 
+      borderLeftColor: "#ccc"
+    },
+    '2pt dotted rgba(0, 10, 37, 50%), 5px dashed #c31': {
+      borderTopWidth: {number: 2, unit: 'pt'}, 
+      borderTopStyle: 'dotted', 
+      borderTopColor: {rgba: [0, 10, 37, {number: 50, unit: "%"}]},
+      borderRightWidth: {number: 5, unit: 'px'}, 
+      borderRightStyle: 'dashed', 
+      borderRightColor: "#c31",
+      borderBottomWidth: {number: 2, unit: 'pt'}, 
+      borderBottomStyle: 'dotted', 
+      borderBottomColor: {rgba: [0, 10, 37, {number: 50, unit: "%"}]},
+      borderLeftWidth: {number: 5, unit: 'px'}, 
+      borderLeftStyle: 'dashed', 
+      borderLeftColor: "#c31"
+    }
+  },
+  
+  padding: {
+    '4pt': {paddingTop: {number: 4, unit: 'pt'}, paddingRight: {number: 4, unit: 'pt'}, paddingBottom: {number: 4, unit: 'pt'}, paddingLeft: {number: 4, unit: 'pt'}},
+    '4px 4px': {paddingTop: {number: 4, unit: 'px'}, paddingRight: {number: 4, unit: 'px'}, paddingBottom: {number: 4, unit: 'px'}, paddingLeft: {number: 4, unit: 'px'}},
+    '4px 4px 4px': {paddingTop: {number: 4, unit: 'px'}, paddingRight: {number: 4, unit: 'px'}, paddingBottom: {number: 4, unit: 'px'}, paddingLeft: {number: 4, unit: 'px'}},
+    '4px 4px 4px 4px': {paddingTop: {number: 4, unit: 'px'}, paddingRight: {number: 4, unit: 'px'}, paddingBottom: {number: 4, unit: 'px'}, paddingLeft: {number: 4, unit: 'px'}}
   }
 }

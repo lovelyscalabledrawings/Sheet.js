@@ -121,9 +121,8 @@ provides : SheetParser.Property
         var length = args.length;
         var result = {};
         for (var i = 0, property; property = properties[i]; i++) {
-          var values = Properties[property].apply(1, args[i % length]);
+          var values = Properties[property].apply(1, args[i] || args[i % 2] || args[0]);
           if (!values) return false;
-          console.log(args[i % length], args)
           for (var prop in values) result[prop] = values[prop];
         }
         return result;
@@ -133,9 +132,9 @@ provides : SheetParser.Property
         var length = arguments.length;
         var result = {};
         for (var i = 0, property; property = properties[i]; i++) {
-          var values = arguments[i % length];
+          var values = arguments[i] || arguments[i % 2] || arguments[0];
           if (!Properties[property].call(1, values)) return false;
-          result[property] = values
+          result[property] = values;
         }
         return result;
       }

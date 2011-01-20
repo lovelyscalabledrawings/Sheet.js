@@ -130,7 +130,7 @@ var Examples = {
     '4px': {marginTop: {number: 4, unit: 'px'}, marginRight: {number: 4, unit: 'px'}, marginBottom: {number: 4, unit: 'px'}, marginLeft: {number: 4, unit: 'px'}},
     '50% 4px': {marginTop: {number: 50, unit: '%'}, marginRight: {number: 4, unit: 'px'}, marginBottom: {number: 50, unit: '%'}, marginLeft: {number: 4, unit: 'px'}},
     '4px 4px 4px': {marginTop: {number: 4, unit: 'px'}, marginRight: {number: 4, unit: 'px'}, marginBottom: {number: 4, unit: 'px'}, marginLeft: {number: 4, unit: 'px'}},
-    //'4px -4fr 4px 4px': {marginTop: {number: 4, unit: 'px'}, marginRight: {number: -4, unit: 'fr'}, marginBottom: {number: 4, unit: 'px'}, marginLeft: {number: 4, unit: 'px'}},
+    '4px -4fr 4px 4px': {marginTop: {number: 4, unit: 'px'}, marginRight: {number: -4, unit: 'fr'}, marginBottom: {number: 4, unit: 'px'}, marginLeft: {number: 4, unit: 'px'}},
 
   },
   
@@ -162,13 +162,41 @@ var Examples = {
       borderLeftWidth: {number: 5, unit: 'px'}, 
       borderLeftStyle: 'dashed', 
       borderLeftColor: "#c31"
-    }
+    },
+    '1px solid #ccc, 2px solid #ccc, 3px solid #ccc': {
+      borderTopWidth: {number: 1, unit: 'px'}, 
+      borderTopStyle: 'solid', 
+      borderTopColor: "#ccc",
+      borderRightWidth: {number: 2, unit: 'px'}, 
+      borderRightStyle: 'solid', 
+      borderRightColor: "#ccc",
+      borderBottomWidth: {number: 3, unit: 'px'}, 
+      borderBottomStyle: 'solid', 
+      borderBottomColor: "#ccc",
+      borderLeftWidth: {number: 2, unit: 'px'}, 
+      borderLeftStyle: 'solid', 
+      borderLeftColor: "#ccc"
+    },
   },
   
   padding: {
     '4pt': {paddingTop: {number: 4, unit: 'pt'}, paddingRight: {number: 4, unit: 'pt'}, paddingBottom: {number: 4, unit: 'pt'}, paddingLeft: {number: 4, unit: 'pt'}},
     '4px 4px': {paddingTop: {number: 4, unit: 'px'}, paddingRight: {number: 4, unit: 'px'}, paddingBottom: {number: 4, unit: 'px'}, paddingLeft: {number: 4, unit: 'px'}},
-    '4px 4px 4px': {paddingTop: {number: 4, unit: 'px'}, paddingRight: {number: 4, unit: 'px'}, paddingBottom: {number: 4, unit: 'px'}, paddingLeft: {number: 4, unit: 'px'}},
-    '4px 4px 4px 4px': {paddingTop: {number: 4, unit: 'px'}, paddingRight: {number: 4, unit: 'px'}, paddingBottom: {number: 4, unit: 'px'}, paddingLeft: {number: 4, unit: 'px'}}
+    '4px 1pt 4px': {paddingTop: {number: 4, unit: 'px'}, paddingRight: {number: 1, unit: 'pt'}, paddingBottom: {number: 4, unit: 'px'}, paddingLeft: {number: 1, unit: 'pt'}},
+    '4px 4px 4px 4px': {paddingTop: {number: 4, unit: 'px'}, paddingRight: {number: 4, unit: 'px'}, paddingBottom: {number: 4, unit: 'px'}, paddingLeft: {number: 4, unit: 'px'}},    
+    
+    '4pz 4px 4px 4px': false,
+    '4px 4pz 4px 4px': false,
+    '4px 4px 4pz 4px': false,
+    '4px 4px 4px 4pz': false,
+    
+    '4pz 4px 4px': false,
+    '4px 4pz 4px': false,
+    '4px 4px 4pz': false,
+    
+    '4pz 4px': false,
+    '4px 4pz': false,
+    
+    '4pz': false
   }
 }

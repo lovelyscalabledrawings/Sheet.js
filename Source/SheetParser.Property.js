@@ -33,10 +33,10 @@ provides : SheetParser.Property
   */
   
   Property.index = function(properties) {
-    var keywords = {};
+    var index = {};
     for (var i = 0, property; property = properties[i]; i++) {
       if (property.push) {
-        var group = keywords[i] = {};
+        var group = index[i] = {};
         for (var j = 0, prop; prop = property[j]; j++) {
           var keys = Properties[prop].keywords;
           if (keys) for (var key in keys) {
@@ -47,7 +47,7 @@ provides : SheetParser.Property
         for (var keyword in group) if (!group[keyword]) delete group[keyword];
       }
     }
-    return keywords;
+    return index;
   };
   
   /*
@@ -67,45 +67,52 @@ provides : SheetParser.Property
     the order.
   */
   
-  Property.shorthand = function(properties, keywords) {
+  Property.shorthand = function(properties) {
+    var index, r = 0;
+    for (var i = 0, property; property = properties[i++];) if (!property.push) r++;
     return function() {
-      var result = [], used = {}, start = 0;
-      for (var i = 0, k = 0, argument; argument = arguments[i]; i++) {
+      var result = [], used = {}, start = 0, group, k = 0, l = arguments.length;
+      for (var i = 0, argument; argument = arguments[i]; i++) {
         var property = properties[k];
         if (!property) return false;
-        if (group = property.push && property) property = properties[k + 1];
-        if (Properties[property](argument)) {
-          if (group) {
+        if ((group = (property.push && property))) property = properties[k + 1];
+        if (property) {
+          if (Properties[property](argument)) k++
+          else property = false
+        }
+        if (group) {
+          if (!property) {
+            if (!index) index = Property.index(properties)
+            if (property = index[k][argument])
+              if (used[property]) return false;
+              else used[property] = 1;
+          }
+          if ((property && !used[property]) || (i == l - 1)) {
             if (i - start > group.length) return false;
-            for (var j = start, k = 0; j < i; j++) 
+            for (var j = start; j < (i + +!property); j++) 
               if (!result[j])
-                for (var l = 0, optional; optional = group[l++];) 
+                for (var m = 0, optional; optional = group[m++];) {
                   if (!used[optional] && Properties[optional](arguments[j])) {
                     result[j] = optional;
+                    used[optional] = true
                     break;
                   }
-            k += 2;
+                }
             start = i;
-          } else k++;
-        } else if (group) {
-          if (!keywords) keywords = Property.index(properties);
-          property = result[i] = keywords[k][argument];
-          if (used[property]) return false;
-          used[property] = 1;
-          continue
-        } else return false
-        if (!property) return false;
-        result[i] = property;
+            k++;
+          }
+        }
+        if (result[i] == null) result[i] = property;
       }
-      if (i < k) return false;
+      if (i < r) return false
       for (var i = 0, j = arguments.length, object = {}; i < j; i++) {
         var value = result[i];
         if (!value) return false;
         object[value] = arguments[i];
       }
       return object;
-    }
-  };
+    };
+  }
 
   /*
     A shorthand that operates on collection of properties. When given values
@@ -139,6 +146,15 @@ provides : SheetParser.Property
         return result;
       }
   };
+  
+  /* 
+    Multiple value property accepts arrays as arguments
+    as well as regular stuff
+  */
+  
+  Property.multiple = function(arg) {
+    //if (arg.push)
+  }
   
   Property.compile = function(definition) {
     var properties, keywords, types;
@@ -189,7 +205,7 @@ provides : SheetParser.Property
     },
     
     url: function(obj) {
-      return !obj.indexOf && "url" in obj;
+      return !obj.indexOf && ("url" in obj);
     },
     
     position: function(obj) {        
@@ -204,75 +220,75 @@ provides : SheetParser.Property
   };
   
   var Styles = SheetParser.Styles = {
-    background:           [['backgroundColor', 'backgroundImage', 'backgroundRepeat', 
-                            'backgroundAttachment', 'backgroundPosition']],
+    background:           [[['backgroundColor', 'backgroundImage', 'backgroundRepeat', 
+                            'backgroundAttachment', 'backgroundPositionX', 'backgroundPositionY']], 'multiple'],
     backgroundColor:      ['color', 'transparent', 'inherit'],
     backgroundImage:      ['url', 'none', 'inherit'],
     backgroundRepeat:     ['repeat', 'no-repeat', 'repeat-x', 'repeat-y', 'inherit'],
     backgroundAttachment: ['fixed', 'scroll', 'inherit'],
     backgroundPosition:   [['backgroundPositionX', 'backgroundPositionY']],
-    backgroundPositionX:  ['position', 'inherit'],
-    backgroundPositionY:  ['position', 'inherit'],
+    backgroundPositionX:  ['percentage', 'left', 'right', 'center', 'length', 'inherit'],
+    backgroundPositionY:  ['percentage', 'top', 'bottom', 'center', 'length', 'inherit'],
      
-    textShadow:        [['textShadowBlur', 'textShadowOffsetX', 'textShadowOffsetY', 'textShadowColor']],
-    textShadowBlur:    ['length'],
-    textShadowOffsetX: ['length'],
-    textShadowOffsetY: ['length'],
-    textShadowColor:   ['color'],
+    textShadow:           [['textShadowBlur', 'textShadowOffsetX', 'textShadowOffsetY', 'textShadowColor'], 'multiple'],
+    textShadowBlur:       ['length'],
+    textShadowOffsetX:    ['length'],
+    textShadowOffsetY:    ['length'],
+    textShadowColor:      ['color'],
+                          
+    boxShadow:            [['boxShadowBlur', 'boxShadowOffsetX', 'boxShadowOffsetY', 'boxShadowColor'], 'multiple'],
+    boxShadowBlur:        ['length'],
+    boxShadowOffsetX:     ['length'],
+    boxShadowOffsetY:     ['length'],
+    boxShadowColor:       ['color'], 
     
-    boxShadow:         [['boxShadowBlur', 'boxShadowOffsetX', 'boxShadowOffsetY', 'boxShadowColor']],
-    boxShadowBlur:     ['length'],
-    boxShadowOffsetX:  ['length'],
-    boxShadowOffsetY:  ['length'],
-    boxShadowColor:    ['color'], 
+    outline:              ['outlineWidth', 'outlineStyle', 'outlineColor'],
+    outlineWidth:         ['length'],
+    outlineStyle:         ['dotted', 'dashed', 'solid', 'double', 'groove', 'reidge', 'inset', 'outset'],
+    outlineColor:         ['color'],
+                          
+    font:                 [[
+                            ['fontStyle', 'fontVariant', 'fontWeight'], 
+                            'fontSize', 
+                            ['lineHeight'], 
+                            'fontFamily'
+                          ]],
+    fontStyle:            ['normal', 'italic', 'oblique', 'inherit'],
+    fontVariant:          ['normal', 'small-caps', 'inherit'],
+    fontWeight:           ['number', 'normal', 'bold', 'inherit'],
+    fontFamily:           ['strings', 'inherit'],
+    fontSize:             ['length', 'percentage', 'inherit', 
+                           'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large', 'smaller', 'larger'],
+                          
+    color:                ['color'],
+    letterSpacing:        ['normal', 'length', 'inherit'],
+    textDecoration:       ['capitalize', 'uppercase', 'lowercase', 'none'],
+    textAlign:            ['left', 'right', 'center', 'justify'],
+    textIdent:            ['length', 'percentage'],                 
+    lineHeight:           ['normal', 'length', 'number', 'percentage'],
     
-    outline:        ['outlineWidth', 'outlineStyle', 'outlineColor'],
-    outlineWidth:   ['length'],
-    outlineStyle:   ['dotted', 'dashed', 'solid', 'double', 'groove', 'reidge', 'inset', 'outset'],
-    outlineColor:   ['color'],
-        
-    font:           [[
-                      ['fontStyle', 'fontVariant', 'fontWeight'], 
-                      'fontSize', 
-                      ['lineHeight'], 
-                      'fontFamily'
-                    ]],
-    fontStyle:      ['normal', 'italic', 'oblique', 'inherit'],
-    fontVariant:    ['normal', 'small-caps', 'inherit'],
-    fontWeight:     ['number', 'normal', 'bold', 'inherit'],
-    fontFamily:     ['strings', 'inherit'],
-    fontSize:       ['length', 'percentage', 'inherit', 
-                     'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large', 'smaller', 'larger'],
-                    
-    color:          ['color'],
-    letterSpacing:  ['normal', 'length', 'inherit'],
-    textDecoration: ['capitalize', 'uppercase', 'lowercase', 'none'],
-    textAlign:      ['left', 'right', 'center', 'justify'],
-    textIdent:      ['length', 'percentage'],                 
-    lineHeight:     ['normal', 'length', 'number', 'percentage'],
-    
-    height:     ['length', 'auto'],
-    maxHeight:  ['length', 'auto'],
-    minHeight:  ['length', 'auto'],
-    width:      ['length', 'auto'],
-    maxWidth:   ['length', 'auto'],
-    minWidth:   ['length', 'auto'],
-    
-    display:    ['inline', 'block', 'list-item', 'run-in', 'inline-block', 'table', 'inline-table', 'none', 
-                 'table-row-group', 'table-header-group', 'table-footer-group', 'table-row', 
-                 'table-column-group', 'table-column', 'table-cell', 'table-caption'],
-    visibility: ['visible', 'hidden'],
-    float:      ['left', 'right', 'none'],
-    clear:      ['none', 'left', 'right', 'both', 'inherit'],
-    overflow:   ['visible', 'hidden', 'scroll', 'auto'],
-    position:   ['static', 'relative', 'absolute', 'fixed'],
-    top:        ['length', 'auto'],
-    left:       ['length', 'auto'],
-    right:      ['length', 'auto'],
-    bottom:     ['length', 'auto'],
-    zIndex:     ['integer'],
-    cursor:     ['auto', 'crosshair', 'default', 'hand', 'move', 'e-resize', 'ne-resize', 'nw-resize', 
-                 'n-resize', 'se-resize', 'sw-resize', 's-resize', 'w-resize', 'text', 'wait', 'help'],
+    height:               ['length', 'auto'],
+    maxHeight:            ['length', 'auto'],
+    minHeight:            ['length', 'auto'],
+    width:                ['length', 'auto'],
+    maxWidth:             ['length', 'auto'],
+    minWidth:             ['length', 'auto'],
+                          
+    display:              ['inline', 'block', 'list-item', 'run-in', 'inline-block', 'table', 'inline-table', 'none', 
+                           'table-row-group', 'table-header-group', 'table-footer-group', 'table-row', 
+                           'table-column-group', 'table-column', 'table-cell', 'table-caption'],
+    visibility:           ['visible', 'hidden'],
+    float:                ['left', 'right', 'none'],
+    clear:                ['none', 'left', 'right', 'both', 'inherit'],
+    overflow:             ['visible', 'hidden', 'scroll', 'auto'],
+    position:             ['static', 'relative', 'absolute', 'fixed'],
+    top:                  ['length', 'auto'],
+    left:                 ['length', 'auto'],
+    right:                ['length', 'auto'],
+    bottom:               ['length', 'auto'],
+    zIndex:               ['integer'],
+    cursor:               ['auto', 'crosshair', 'default', 'hand', 'move', 'e-resize', 'ne-resize', 'nw-resize', 
+                           'n-resize', 'se-resize', 'sw-resize', 's-resize', 'w-resize', 'text', 'wait', 'help'],
   };
 
   var expanded = ['borderWidth', 'borderColor', 'borderStyle', 'padding', 'margin', 'border'];

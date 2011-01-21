@@ -69,11 +69,7 @@ var Examples = {
     'rgbo(1, 2, 1, 0.5)': false,
     'rdb(1, 2, 1, 0.5)': false
     //'black'
-    //'cyan'
-    
-    //'rgbo(1, 2, 1f, 0.5)': false, - arguments not validated yet
-    //'rdb(1, z, 1, 0.5)': false,
-    
+    //'cyan' - Color map takes 4kb. Does it worth it?    
   },
   lineHeight: {
     'normal': true,
@@ -177,6 +173,38 @@ var Examples = {
       borderLeftStyle: 'solid', 
       borderLeftColor: "#ccc"
     },
+  },
+  
+  background: {
+    '#cc0': { backgroundColor: '#cc0'},
+    'no-repeat #cd1': { backgroundRepeat: 'no-repeat', backgroundColor: '#cd1'},
+    '#cd2 repeat-x fixed': { backgroundColor: '#cd2', backgroundRepeat: 'repeat-x', backgroundAttachment: 'fixed'},
+    '#e33 url("http://google.png") center': { backgroundColor: '#e33', backgroundImage: {url: "http://google.png"}, backgroundPositionX: 'center'},
+    'url("//cc.cc") rgba(0, 3, 2, 1.5%) 3px': { backgroundImage: {url: "//cc.cc"}, backgroundColor: {rgba: [0, 3, 2, {number: 1.5, unit: '%'}]}, backgroundPositionX: {number: 3, unit: 'px'}},
+    '-55.5% right repeat url("//cc.cc#ach.gif") hsb(20, 10, -10, 5%)': { 
+      backgroundPositionY: {number: -55.5, unit: '%'},
+      backgroundPositionX: 'right',
+      backgroundRepeat: 'repeat',
+      backgroundImage: {url: "//cc.cc#ach.gif"}, 
+      backgroundColor: {hsb: [20, 10, -10, {number: 5, unit: '%'}]}
+    },
+    
+    '-55.5% bottom repeat-y url("#pic") #ccc fixed': {
+      backgroundPositionX: {number: -55.5, unit: '%'},
+      backgroundPositionY: 'bottom',
+      backgroundRepeat: 'repeat-y',
+      backgroundImage: {url: "#pic"},
+      backgroundColor: '#ccc',
+      backgroundAttachment: 'fixed'
+    },
+    '-55.5f bottom repeat-y url("#pic") #ccc fixed': false,
+    '-55.5% bodtom repeat-y url("#pic") #ccc fixed': false,
+    '-55.5% bottom repead-y url("#pic") #ccc fixed': false,
+    '-55.5% bottom repeat-y uzl("#pic") #ccc fixed': false,
+    '-55.5% bottom repeat-y url #ccc fixed': false,
+    '-55.5% bottom repeat-y url("#pic") #zzz fixed': false,
+    '-55.5% bottom repeat-y url("#pic") #ccc fixes': false,
+    '-55.5% bottom repeat-y url("#pic") #ccc fixed fixed': false
   },
   
   padding: {

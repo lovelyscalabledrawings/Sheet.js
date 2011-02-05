@@ -51,6 +51,7 @@
 		"Source/SheetParser.CSS.js",
 		"Source/SheetParser.Value.js",
 		"Source/SheetParser.Property.js",
+		"Source/SheetParser.Styles.js",
 		"Source/sg-regex-tools.js"
 	],
 

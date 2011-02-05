@@ -32,13 +32,13 @@ provides : SheetParser.Property
     as one of the properties in group.
   */
   
-  Property.index = function(properties) {
+  Property.index = function(properties, context) {
     var index = {};
     for (var i = 0, property; property = properties[i]; i++) {
       if (property.push) {
         var group = index[i] = {};
         for (var j = 0, prop; prop = property[j]; j++) {
-          var keys = Properties[prop].keywords;
+          var keys = context[prop].keywords;
           if (keys) for (var key in keys) {
             if (group[key] == null) group[key] = prop;
             else group[key] = false;
@@ -67,7 +67,7 @@ provides : SheetParser.Property
     the order.
   */
   
-  Property.shorthand = function(properties) {
+  Property.shorthand = function(properties, keywords, context) {
     var index, r = 0;
     for (var i = 0, property; property = properties[i++];) if (!property.push) r++;
     return function() {
@@ -77,12 +77,12 @@ provides : SheetParser.Property
         if (!property) return false;
         if ((group = (property.push && property))) property = properties[k + 1];
         if (property) {
-          if (Properties[property](argument)) k++
+          if (context[property](argument)) k++
           else property = false
         }
         if (group) {
           if (!property) {
-            if (!index) index = Property.index(properties)
+            if (!index) index = Property.index(properties, context)
             if (property = index[k][argument])
               if (used[property]) return false;
               else used[property] = 1;
@@ -92,7 +92,7 @@ provides : SheetParser.Property
             for (var j = start; j < (i + +!property); j++) 
               if (!result[j])
                 for (var m = 0, optional; optional = group[m++];) {
-                  if (!used[optional] && Properties[optional](arguments[j])) {
+                  if (!used[optional] && context[optional](arguments[j])) {
                     result[j] = optional;
                     used[optional] = true
                     break;
@@ -120,15 +120,15 @@ provides : SheetParser.Property
     is repeated until all properties are filled.     
   */
 
-  Property.collection = function(properties, keywords) {
-    var first = Properties[properties[0]];
+  Property.collection = function(properties, keywords, context) {
+    var first = context[properties[0]];
     if (first.type != 'simple') 
       return function(arg) {
         var args = (!arg || !arg.push) ? [Array.prototype.slice.call(arguments)] : arguments;
         var length = args.length;
         var result = {};
         for (var i = 0, property; property = properties[i]; i++) {
-          var values = Properties[property].apply(1, args[i] || args[i % 2] || args[0]);
+          var values = context[property].apply(1, args[i] || args[i % 2] || args[0]);
           if (!values) return false;
           for (var prop in values) result[prop] = values[prop];
         }
@@ -140,7 +140,7 @@ provides : SheetParser.Property
         var result = {};
         for (var i = 0, property; property = properties[i]; i++) {
           var values = arguments[i] || arguments[i % 2] || arguments[0];
-          if (!Properties[property].call(1, values)) return false;
+          if (!context[property].call(1, values)) return false;
           result[property] = values;
         }
         return result;
@@ -156,7 +156,7 @@ provides : SheetParser.Property
     //if (arg.push)
   }
   
-  Property.compile = function(definition) {
+  Property.compile = function(definition, context) {
     var properties, keywords, types;
     for (var i = 0, bit; bit = definition[i++];) {
       if (bit.push) properties = bit;
@@ -168,8 +168,13 @@ provides : SheetParser.Property
       } else options = bit;
     }
     var type = properties ? (keywords && keywords.collection ? "collection" : "shorthand") : 'simple'
-    var property = Property[type](properties || types, keywords)
+    var property = Property[type](properties || types, keywords, context);
     if (keywords) property.keywords = keywords;
+    if (properties) {
+      var props = [];
+      for (var i = 0, prop; prop = properties[i++];) prop.push ? props.push.apply(props, prop) : props.push(prop);
+      property.properties = props;
+    }
     property.type = type;
     return property;
   };
@@ -181,7 +186,7 @@ provides : SheetParser.Property
     },
   
     color: function(obj) {
-      return obj.indexOf ? obj.match(/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/) : (('rgba' in obj) || ('rgb' in obj) || ('hsb' in obj))
+      return obj.indexOf ? obj.match(/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/) : (obj.isColor || obj.rgba || obj.rgb || obj.hsb)
     },
     
     number: function(obj) {
@@ -218,102 +223,5 @@ provides : SheetParser.Property
       return obj.unit == '%'
     }
   };
-  
-  var Styles = SheetParser.Styles = {
-    background:           [[['backgroundColor', 'backgroundImage', 'backgroundRepeat', 
-                            'backgroundAttachment', 'backgroundPositionX', 'backgroundPositionY']], 'multiple'],
-    backgroundColor:      ['color', 'transparent', 'inherit'],
-    backgroundImage:      ['url', 'none', 'inherit'],
-    backgroundRepeat:     ['repeat', 'no-repeat', 'repeat-x', 'repeat-y', 'inherit'],
-    backgroundAttachment: ['fixed', 'scroll', 'inherit'],
-    backgroundPosition:   [['backgroundPositionX', 'backgroundPositionY']],
-    backgroundPositionX:  ['percentage', 'left', 'right', 'center', 'length', 'inherit'],
-    backgroundPositionY:  ['percentage', 'top', 'bottom', 'center', 'length', 'inherit'],
-     
-    textShadow:           [['textShadowBlur', 'textShadowOffsetX', 'textShadowOffsetY', 'textShadowColor'], 'multiple'],
-    textShadowBlur:       ['length'],
-    textShadowOffsetX:    ['length'],
-    textShadowOffsetY:    ['length'],
-    textShadowColor:      ['color'],
-                          
-    boxShadow:            [['boxShadowBlur', 'boxShadowOffsetX', 'boxShadowOffsetY', 'boxShadowColor'], 'multiple'],
-    boxShadowBlur:        ['length'],
-    boxShadowOffsetX:     ['length'],
-    boxShadowOffsetY:     ['length'],
-    boxShadowColor:       ['color'], 
-    
-    outline:              ['outlineWidth', 'outlineStyle', 'outlineColor'],
-    outlineWidth:         ['length'],
-    outlineStyle:         ['dotted', 'dashed', 'solid', 'double', 'groove', 'reidge', 'inset', 'outset'],
-    outlineColor:         ['color'],
-                          
-    font:                 [[
-                            ['fontStyle', 'fontVariant', 'fontWeight'], 
-                            'fontSize', 
-                            ['lineHeight'], 
-                            'fontFamily'
-                          ]],
-    fontStyle:            ['normal', 'italic', 'oblique', 'inherit'],
-    fontVariant:          ['normal', 'small-caps', 'inherit'],
-    fontWeight:           ['number', 'normal', 'bold', 'inherit'],
-    fontFamily:           ['strings', 'inherit'],
-    fontSize:             ['length', 'percentage', 'inherit', 
-                           'xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large', 'smaller', 'larger'],
-                          
-    color:                ['color'],
-    letterSpacing:        ['normal', 'length', 'inherit'],
-    textDecoration:       ['capitalize', 'uppercase', 'lowercase', 'none'],
-    textAlign:            ['left', 'right', 'center', 'justify'],
-    textIdent:            ['length', 'percentage'],                 
-    lineHeight:           ['normal', 'length', 'number', 'percentage'],
-    
-    height:               ['length', 'auto'],
-    maxHeight:            ['length', 'auto'],
-    minHeight:            ['length', 'auto'],
-    width:                ['length', 'auto'],
-    maxWidth:             ['length', 'auto'],
-    minWidth:             ['length', 'auto'],
-                          
-    display:              ['inline', 'block', 'list-item', 'run-in', 'inline-block', 'table', 'inline-table', 'none', 
-                           'table-row-group', 'table-header-group', 'table-footer-group', 'table-row', 
-                           'table-column-group', 'table-column', 'table-cell', 'table-caption'],
-    visibility:           ['visible', 'hidden'],
-    float:                ['left', 'right', 'none'],
-    clear:                ['none', 'left', 'right', 'both', 'inherit'],
-    overflow:             ['visible', 'hidden', 'scroll', 'auto'],
-    position:             ['static', 'relative', 'absolute', 'fixed'],
-    top:                  ['length', 'auto'],
-    left:                 ['length', 'auto'],
-    right:                ['length', 'auto'],
-    bottom:               ['length', 'auto'],
-    zIndex:               ['integer'],
-    cursor:               ['auto', 'crosshair', 'default', 'hand', 'move', 'e-resize', 'ne-resize', 'nw-resize', 
-                           'n-resize', 'se-resize', 'sw-resize', 's-resize', 'w-resize', 'text', 'wait', 'help'],
-  };
-
-  var expanded = ['borderWidth', 'borderColor', 'borderStyle', 'padding', 'margin', 'border'];
-  for (var side, sides = ['Top', 'Right', 'Bottom', 'Left'], i = 0; side = sides[i++];) {
-    Styles['border' + side]           = [['border' + side + 'Width', 'border' + side + 'Style', 'border' + side + 'Color']];
-  
-    Styles['border' + side + 'Width'] = ['length', 'thin', 'thick', 'medium'];
-    Styles['border' + side + 'Style'] = ['none', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset', 'inherit', 'none'];
-    Styles['border' + side + 'Color'] = ['color'];
-  
-    Styles['margin' + side]           = ['length', 'percentage', 'auto'];
-    Styles['padding' + side]          = ['length', 'percentage', 'auto'];
-  
-    for (var j = 0, prop; prop = expanded[j++];) {
-      if (!Styles[prop]) Styles[prop] = [[]];
-      Styles[prop][0].push(prop.replace(/^([a-z]*)/, '$1' + side));
-      if (i == 4) Styles[prop].push('collection')
-    }
-  
-    if (i % 2 == 0) 
-      for (var j = 1, adj; adj = sides[j+=2];) 
-        Styles['borderRadius' + side + adj] = ['length', 'none'];
-  };
-  
-  var Properties = SheetParser.Properties = {}
-  for (var property in Styles) Properties[property] = Property.compile(Styles[property]);
   
 })(typeof exports != 'undefined' ? exports : this);

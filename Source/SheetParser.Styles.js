@@ -74,7 +74,7 @@ var CSS = SheetParser.Properties = {
                          'table-row-group', 'table-header-group', 'table-footer-group', 'table-row', 
                          'table-column-group', 'table-column', 'table-cell', 'table-caption'],
   visibility:           ['visible', 'hidden'],
-  float:                ['none', 'left', 'right'],
+  'float':              ['none', 'left', 'right'],
   clear:                ['none', 'left', 'right', 'both', 'inherit'],
   overflow:             ['visible', 'hidden', 'scroll', 'auto'],
   position:             ['static', 'relative', 'absolute', 'fixed'],

@@ -68,7 +68,7 @@ provides : SheetParser.Value
   ;(Value.keyword = x(/[-a-zA-Z0-9]+/, "keyword"))
   ;(Value.token = x(/[^$,\s\/)]+/, "token"))
   
-  ;(Value['function'] = x("([-a-zA-Z0-9]+)\\((" + rRound + "*)\\)"))
+  ;(Value['function'] = x("([-_a-zA-Z0-9]+)\\((" + rRound + "*)\\)"))
   .names = [               'function',       '_arguments']
   
   ;(Value.integer = x(/-?\d+/))

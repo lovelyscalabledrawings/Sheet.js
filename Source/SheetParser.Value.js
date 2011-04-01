@@ -76,7 +76,7 @@ provides : SheetParser.Value
   ;(Value.number = x(['(', Value.float,  OR, Value.integer, ')']))
   .names = [           'number']
 
-  ;(Value.unit = x(/em|px|pt|%|fr/, 'unit'))
+  ;(Value.unit = x(/em|px|pt|%|fr|deg/, 'unit'))
   ;(Value.length = x(['^', Value.number, Value.unit, "?$"]))
   ;(Value.direction = x(/top|left|bottom|right|center/, 'direction'))
   ;(Value.position = x([Value.length, OR, Value.direction]))

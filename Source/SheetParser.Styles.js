@@ -84,7 +84,7 @@ var CSS = SheetParser.Properties = {
   bottom:               ['length', 'auto'],
   zIndex:               ['integer'],
   cursor:               ['auto', 'crosshair', 'default', 'hand', 'move', 'e-resize', 'ne-resize', 'nw-resize', 
-                         'n-resize', 'se-resize', 'sw-resize', 's-resize', 'w-resize', 'text', 'wait', 'help'],
+                         'n-resize', 'se-resize', 'sw-resize', 's-resize', 'w-resize', 'text', 'wait', 'help']
 };
 
 var expanded = ['borderWidth', 'borderColor', 'borderStyle', 'padding', 'margin', 'border'];

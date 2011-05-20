@@ -72,8 +72,8 @@ provides : SheetParser.Value
   .names = [               'function',       '_arguments']
   
   ;(Value.integer = x(/-?\d+/))
-  ;(Value.float = x(/-?\d+\.\d*/))
-  ;(Value.number = x(['(', Value.float,  OR, Value.integer, ')']))
+  ;(Value['float'] = x(/-?\d+\.\d*/))
+  ;(Value.number = x(['(', Value['float'],  OR, Value['integer'], ')']))
   .names = [           'number']
 
   ;(Value.unit = x(/em|px|pt|%|fr|deg/, 'unit'))

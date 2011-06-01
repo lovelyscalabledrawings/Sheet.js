@@ -4,7 +4,7 @@ if (typeof exports == 'undefined') exports = {};
 
 // Test Requirements
 
-if (typeof require != 'undefined') {
+if (typeof module !== 'undefined' && module.exports) {
 	// If run from the project root
 	require.paths.unshift('Source');
 	require.paths.unshift('Test');

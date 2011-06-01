@@ -15,7 +15,7 @@ provides : SheetParser.Value
 
 (function(exports) {
   /*<CommonJS>*/
-  var combineRegExp = (typeof require == 'undefined')
+  var combineRegExp = (typeof module === 'undefined' || !module.exports)
     ?  exports.combineRegExp
     :  require('./sg-regex-tools').combineRegExp
   var SheetParser = exports.SheetParser

@@ -186,7 +186,7 @@ provides : SheetParser.Property
     },
   
     color: function(obj) {
-      return obj.indexOf ? obj.match(/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/) : (obj.isColor || obj.rgba || obj.rgb || obj.hsb)
+      return obj.match? obj.match(/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/) : (obj.isColor || obj.rgba || obj.rgb || obj.hsb)
     },
     
     number: function(obj) {
@@ -210,7 +210,7 @@ provides : SheetParser.Property
     },
     
     url: function(obj) {
-      return !obj.indexOf && ("url" in obj);
+      return !obj.match && ("url" in obj);
     },
     
     position: function(obj) {        

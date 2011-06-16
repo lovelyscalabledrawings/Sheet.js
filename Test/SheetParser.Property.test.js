@@ -27,7 +27,7 @@ exports ["test Property parsing"] = {
         var value = SheetParser.Value.translate(input);
         if (!value.push) value = [value];
         deepEqual(
-          SheetParser.Properties[property].apply(1, value),
+          SheetParser.Styles[property].apply(1, value),
           examples[input], 
           property + ': ' + input
         )
@@ -44,7 +44,7 @@ var Examples = {
     '1': true,
     '999999': true,
     '-1': true,
-    '+1': false,
+    '+1': true,
     'f': false,
     'none': false,
     'inherit': false,

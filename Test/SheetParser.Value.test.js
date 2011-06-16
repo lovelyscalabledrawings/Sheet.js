@@ -4,7 +4,7 @@ if (typeof exports == 'undefined') exports = {};
 
 // Test Requirements
 
-if (typeof module !== 'undefined' && module.exports)
+if (typeof module !== 'undefined' && module.exports) {
 	// If run from the project root
 	require.paths.unshift('Source');
 	require.paths.unshift('Test');
@@ -44,12 +44,42 @@ var Examples = {
   '5fr': {number: 5, unit: 'fr'},
   '65%': {number: 65, unit: '%'},
   '1 1': [1, 1],
+  '1 +1': [1, 1],
+  '1 -1': [1, -1],
+  '(1 -1)': [1, '-', 1],
+  '(1 +1)': [1, '+', 1],
+  '(1-1)': [1, '-', 1],
+  '(1+1)': [1, '+', 1],
+  '(a)': 'a',
+  '-(1)': -1,
+  '-(1 - 5)': ['-', [1, '-', 5]],
+  '+(1 - 5)': ['+', [1, '-', 5]],
+  '+(1 - 5)': ['+', [1, '-', 5]],
+  '*(1 - 5)': ['*', [1, '-', 5]],
+  '-(1 +-5)': ['-', [1, '+', -5]],
+  '+(1 +-5)': ['+', [1, '+', -5]],
+  '+(1 +-5)': ['+', [1, '+', -5]],
+  '*(1 +-5)': ['*', [1, '+', -5]],
+  '-(1 -+5)': ['-', [1, '-', 5]],
+  '+(1 -+5)': ['+', [1, '-', 5]],
+  '+(1 -+5)': ['+', [1, '-', 5]],
+  '*(1 -+5)': ['*', [1, '-', 5]],
   '1 1 1': [1, 1, 1],
   '1 1 9 1': [1, 1, 9, 1],
   '1 2 4 8 1': [1, 2, 4, 8, 1],
   '1 1, 1 3': [[1, 1], [1, 3]],
+  'a != b': ['a', '!=', 'b'],
+  'a ~= b': ['a', '~=', 'b'],
+  'not screen and (pixel--moz-density: 3)': ['not', 'screen', 'and', ['pixel--moz-density:', 3]],
+  'count(#publications[a=1]::items > li ~ a[href])': {count: ['#publications[a=1]::items', '>', 'li', '~', 'a[href]']},
+  'count(#publications[a=1]::items !> li !~ a[href])': {count: ['#publications[a=1]::items', '!>', 'li', '!~', 'a[href]']},
+  'count(#publications[a=1]::items ++ li ~~ a[href])': {count: ['#publications[a=1]::items', '+', '+', 'li', '~~', 'a[href]']},
   'a(b)': {a: "b"},
-  'url("http://jesus.com.abc/white.xml#perfect")': {url: "http://jesus.com.abc/white.xml#perfect"},
+  '(b)': "b",
+  '(b a)': ["b", "a"],
+  '(b / a + 3)': ["b", "/", "a", "+", 3],
+  "(a / (b - 2)(2 - 3)) / 2": [['a', '/', ['b', '-', 2], [2, '-', 3]], '/', 2],
+  'url("http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect")': {url: "http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect"},
   'url(1px solid)': {url: [{number: 1, unit: 'px'}, 'solid']},
   'rgba(1, 1, 1, 40%)': {rgba: [1, 1, 1, {number: 40, unit: '%'}]},
   '1em, 2em 3em, 4em 5em 6em, 7em 9em 3pt auto': [
@@ -60,5 +90,5 @@ var Examples = {
     
   //edge case in CSS: string separated list
   //two arrays instead of one
-  'normal normal 3px/5pt Georgia, "Times New Roman"': [['normal', 'normal', {number: 3, unit: 'px'}, {number: 5, unit: 'pt'}, 'Georgia'], ['Times New Roman']]
+  'normal normal 3px/5pt Georgia, "Times New Roman"': [['normal', 'normal', {number: 3, unit: 'px'}, '/', {number: 5, unit: 'pt'}, 'Georgia'], ['Times New Roman']]
 }

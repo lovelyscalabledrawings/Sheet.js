@@ -87,7 +87,7 @@ provides : SheetParser.Value
   
   ;(Value.comma = x(/\s*,\s*/, 'comma'))
   ;(Value.whitespace = x(/\s+/, 'whitespace'))
-  ;(Value.operator = x(/[-+]|[\/%^~=><*\^]+/, 'operator'))
+  ;(Value.operator = x(/[-+]|[\/%^~=><*\^|&]+/, 'operator'))
 
   ;(Value.stringDouble = x(/"((?:[^"]|\\")*)"/)).names = ['dstring']
   ;(Value.stringSingle = x(/'((?:[^']|\\')*)'/)).names = ['sstring']

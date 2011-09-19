@@ -23,7 +23,7 @@ exports ["test Value parsing"] = {
   "test stuff": function() {
     for (var input in Examples) {
       deepEqual(
-        SheetParser.Value.translate(input),
+        Sheet.Value.translate(input),
         Examples[input],
         input
       )
@@ -80,7 +80,15 @@ var Examples = {
   '(b / a + 3)': ["b", "/", "a", "+", 3],
   "(a / (b - 2)(2 - 3)) / 2": [['a', '/', ['b', '-', 2], [2, '-', 3]], '/', 2],
   'url("http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect")': {url: "http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect"},
-  'url(1px solid)': {url: [{number: 1, unit: 'px'}, 'solid']},
+  'url(\'http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect\')': {url: "http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect"},
+  'url(http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect)': {url: "http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect"},
+  'local(http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect)': {local: "http://jesus.com.abc/white.xml?q=a[b][]=c&a#perfect"},
+  'url(1px solid)': {url: '1px solid'},
+  'local(1px solid)': {local: '1px solid'},
+  'src(1px solid)': {src: '1px solid'},
+  'srk(1px solid)': {srk: [{number: 1, unit: 'px'}, 'solid']},
+  'lokal(1px solid)': {lokal: [{number: 1, unit: 'px'}, 'solid']},
+  'uzl(1px solid)': {uzl: [{number: 1, unit: 'px'}, 'solid']},
   'rgba(1, 1, 1, 40%)': {rgba: [1, 1, 1, {number: 40, unit: '%'}]},
   '1em, 2em 3em, 4em 5em 6em, 7em 9em 3pt auto': [
     [{number: 1, unit: 'em'}], 

@@ -1,28 +1,22 @@
 /*
 ---
-name    : SheetParser.Property
+name    : Sheet.Property
 
 authors   : Yaroslaff Fedin
 
 license   : MIT
 
-requires : SheetParser.CSS
+requires : [Sheet.Type]
 
-provides : SheetParser.Property
+provides : Sheet.Property
 ...
 */
 
 
 (function(exports) {
-  /*<CommonJS>*/
-  var combineRegExp = (typeof module === 'undefined' || !module.exports)
-    ?  exports.combineRegExp
-    :  require('./sg-regex-tools').combineRegExp
-  var SheetParser = exports.SheetParser
-  /*</CommonJS>*/
-  
-  var Property = SheetParser.Property = {version: '0.2 dev'};
-  
+  var Sheet = exports.Sheet
+  var Property = Sheet.Property = {version: '0.3 dev'};
+  var Type = Sheet.Type;
   /*
     Finds optional groups in expressions and builds keyword
     indecies for them. Keyword index is an object that has
@@ -56,8 +50,11 @@ provides : SheetParser.Property
 
   Property.simple = function(types, keywords) {
     return function(value) {
-      if (keywords && keywords[value]) return true;
-      if (types) for (var i = 0, type; type = types[i++];) if (Type[type](value)) return true;
+      if (keywords && keywords[value]) return value;
+      if (types) for (var i = 0, type, parsed; type = types[i++];) {
+        parsed = Type[type](value);
+        if (parsed !== false) return parsed;
+      }
       return false;
     }
   };
@@ -71,46 +68,55 @@ provides : SheetParser.Property
     var index, r = 0;
     for (var i = 0, property; property = properties[i++];) if (!property.push) r++;
     return function() {
-      var result = [], used = {}, start = 0, group, k = 0, l = arguments.length;
+      var resolved = [], values = [], used = {}, start = 0, group, k = 0, l = arguments.length;
       for (var i = 0, argument; argument = arguments[i]; i++) {
         var property = properties[k];
         if (!property) return false;
         if ((group = (property.push && property))) property = properties[k + 1];
         if (property) {
-          if (context[property](argument)) k++
+          if ((values[i] = context[property](argument)) !== false) k++
           else property = false
         }
         if (group) {
           if (!property) {
             if (!index) index = Property.index(properties, context)
-            if (property = index[k][argument])
+            if ((property = index[k][argument])) {
               if (used[property]) return false;
-              else used[property] = 1;
+              else used[property] = true;
+              values[i] = argument;
+            }
           }
           if ((property && !used[property]) || (i == l - 1)) {
             if (i - start > group.length) return false;
-            for (var j = start; j < (i + +!property); j++) 
-              if (!result[j])
-                for (var m = 0, optional; optional = group[m++];) {
-                  if (!used[optional] && context[optional](arguments[j])) {
-                    result[j] = optional;
-                    used[optional] = true
-                    break;
-                  }
-                }
+            for (var j = start, end = (i + +!property); j < end; j++) 
+              if (!resolved[j])
+                for (var m = 0, optional; optional = group[m++];)
+                  if (!used[optional])
+                    if ((values[j] = context[optional](arguments[j])) !== false) {
+                      resolved[j] = optional;
+                      used[optional] = true
+                      break;
+                    }
             start = i;
             k++;
           }
         }
-        if (result[i] == null) result[i] = property;
+        if (resolved[i] == null) {
+          resolved[i] = property;
+          if (values[i] == false) values[i] = argument;
+        }
       }
-      if (i < r) return false
-      for (var i = 0, j = arguments.length, object = {}; i < j; i++) {
-        var value = result[i];
-        if (!value) return false;
-        object[value] = arguments[i];
+      if (i < r) return false;
+      if (!result) var result = this == window || this.$root ? {} : this;
+      for (var i = 0; i < l; i++) {
+        var property = resolved[i];
+        if (!property) return false;
+        var value = values[i];
+        if (value === false) return false;
+        if (result.push) result.push(value);
+        else result[property] = value;
       }
-      return object;
+      return result;
     };
   }
 
@@ -125,23 +131,23 @@ provides : SheetParser.Property
     if (first.type != 'simple') 
       return function(arg) {
         var args = (!arg || !arg.push) ? [Array.prototype.slice.call(arguments)] : arguments;
-        var length = args.length;
-        var result = {};
+        var result = this == window || this.$root ? {} : this;
         for (var i = 0, property; property = properties[i]; i++) {
-          var values = context[property].apply(1, args[i] || args[i % 2] || args[0]);
-          if (!values) return false;
-          for (var prop in values) result[prop] = values[prop];
+          var value = context[property].apply(result.push ? [] : result, args[i] || args[i % 2] || args[0]);
+          if (value === false) return false;
+          if (result.push) result.push(value);
         }
         return result;
       }
     else
       return function() {
-        var length = arguments.length;
-        var result = {};
+        var result = this == window || this.$root ? {} : this;
         for (var i = 0, property; property = properties[i]; i++) {
-          var values = arguments[i] || arguments[i % 2] || arguments[0];
-          if (!context[property].call(1, values)) return false;
-          result[property] = values;
+          var value = arguments[i] || arguments[i % 2] || arguments[0];
+          value = context[property].call(result, value);
+          if (value === false) return false;
+          if (result.push) result.push(value);
+          else result[property] = value;
         }
         return result;
       }
@@ -167,7 +173,7 @@ provides : SheetParser.Property
         } else types ? types.push(bit) : (types = [bit]);
       } else options = bit;
     }
-    var type = properties ? (keywords && keywords.collection ? "collection" : "shorthand") : 'simple'
+    var type = properties ? (keywords && keywords.collection ? 'collection' : 'shorthand') : 'simple'
     var property = Property[type](properties || types, keywords, context);
     if (keywords) property.keywords = keywords;
     if (properties) {
@@ -177,51 +183,6 @@ provides : SheetParser.Property
     }
     property.type = type;
     return property;
-  };
-  
-  
-  var Type = Property.Type = {
-    length: function(obj) {
-      return typeof obj == 'number' || (!obj.indexOf && ('number' in obj) && obj.unit && (obj.unit != '%'))
-    },
-  
-    color: function(obj) {
-      return obj.match? obj.match(/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/) : (obj.isColor || obj.rgba || obj.rgb || obj.hsb)
-    },
-    
-    number: function(obj) {
-      return typeof obj == 'number'
-    },
-    
-    integer: function(obj) {
-      return obj % 1 == 0 && ((0 + obj).toString() == obj)
-    },
-  
-    keyword: function(keywords) {
-      var storage;
-      for (var i = 0, keyword; keyword = keywords[i++];) storage[keyword] = 1;
-      return function(keyword) {
-        return !!storage[keyword]
-      }
-    },
-    
-    strings: function(obj) {
-      return !!obj.indexOf
-    },
-    
-    url: function(obj) {
-      return !obj.match && ("url" in obj);
-    },
-    
-    position: function(obj) {        
-      var positions = Type.position.positions;
-      if (!positions) positions = Type.position.positions = {left: 1, top: 1, bottom: 1, right: 1, center: 1}
-      return positions[obj]
-    },
-    
-    percentage: function(obj) {
-      return obj.unit == '%'
-    }
   };
   
 })(typeof exports != 'undefined' ? exports : this);

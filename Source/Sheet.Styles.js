@@ -1,21 +1,21 @@
 /*
 ---
-name    : SheetParser.Styles
+name    : Sheet.Styles
 
 authors   : Yaroslaff Fedin
 
 license   : MIT
 
-requires : SheetParser.Property
+requires : Sheet.Property
 
-provides : SheetParser.Styles
+provides : Sheet.Styles
 ...
 */
 
 (function() {
    
-var SheetParser = (typeof exports == 'undefined') ? window.SheetParser : exports.SheetParser;
-var CSS = SheetParser.Properties = {
+var Sheet = (typeof exports == 'undefined') ? window.Sheet : exports.Sheet;
+var CSS = Sheet.Properties = {
   background:           [[['backgroundColor', 'backgroundImage', 'backgroundRepeat', 
                           'backgroundAttachment', 'backgroundPositionX', 'backgroundPositionY']], 'multiple'],
   backgroundColor:      ['color', 'transparent', 'inherit'],
@@ -61,7 +61,7 @@ var CSS = SheetParser.Properties = {
   textDecoration:       ['none', 'capitalize', 'uppercase', 'lowercase'],
   textAlign:            ['left', 'right', 'center', 'justify'],
   textIdent:            ['length', 'percentage'],                 
-  lineHeight:           ['normal', 'length', 'number', 'percentage'],
+  lineHeight:           ['normal', 'number', 'length', 'percentage'],
   
   height:               ['length', 'auto'],
   maxHeight:            ['length', 'auto'],
@@ -109,7 +109,16 @@ for (var side, sides = ['Top', 'Right', 'Bottom', 'Left'], i = 0; side = sides[i
       CSS['borderRadius' + side + adj] = ['length', 'none'];
 };
 
-var Styles = SheetParser.Styles = {}
-for (var property in CSS) Styles[property] = SheetParser.Property.compile(CSS[property], Styles);
+var Styles = Sheet.Styles = {$root: true};
+for (var property in CSS) {
+  var style = Styles[property] = Sheet.Property.compile(CSS[property], Styles);
+  var hyphenated = property.replace(/(^|[a-z])([A-Z])/g, function(m, a, b) {
+    return a + '-' + b.toLowerCase();
+  });
+  style.property = property;
+  style.hyphenated = hyphenated;
+  Styles[hyphenated] = Styles[property];
+}
+Styles.cssFloat = Styles.styleFloat = Styles['float'];
 
 })();

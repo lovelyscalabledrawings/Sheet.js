@@ -1,14 +1,14 @@
 /*
 ---
-name    : SheetParser.Value
+name    : Sheet.Value
 
 authors   : Yaroslaff Fedin
 
 license   : MIT
 
-requires : SheetParser.CSS
+requires : Sheet
 
-provides : SheetParser.Value
+provides : Sheet.Value
 ...
 */
 
@@ -18,10 +18,10 @@ provides : SheetParser.Value
   var combineRegExp = (typeof module === 'undefined' || !module.exports)
     ?  exports.combineRegExp
     :  require('./sg-regex-tools').combineRegExp
-  var SheetParser = exports.SheetParser
+  var Sheet = exports.Sheet
   /*</CommonJS>*/
   
-  var Value = SheetParser.Value = {version: '1.2.2 dev'};
+  var Value = Sheet.Value = {version: '1.3 dev'};
   
   Value.translate = function(value, expression) {
     var found, result = [], matched = [], scope = result
@@ -29,7 +29,11 @@ provides : SheetParser.Value
     var chr, unit, number, func, text, operator;
     while (found = regex.exec(value)) matched.push(found);
     for (var i = 0; found = matched[i++];) {
-      if ((text = found[names._arguments])) {
+      if ((text = found[names.href])) {
+        var obj = {};
+        obj[found[names.src]] = text.match(Value.string) ? text.substr(1, text.length - 2) : text
+        scope.push(obj);
+      } else if ((text = found[names._arguments])) {
         var translated = Value.translate(text, true), func = found[names['function']];
         for (var j = 0, bit; bit = translated[j]; j++) if (bit && bit.length == 1) translated[j] = bit[0];
         if (func && ((operator = operators[func]) == null)) {
@@ -93,10 +97,14 @@ provides : SheetParser.Value
   ;(Value.stringSingle = x(/'((?:[^']|\\')*)'/)).names = ['sstring']
   ;(Value.string = x([Value.stringSingle, OR, Value.stringDouble]))
   ;(Value.token = x(/[^$,\s\/())]+/, "token"))
+  ;(Value.url = x(['(url|local|src)\\((.*?)\\)']))
+  .names = [        'src',        'href'];
   
   Value.tokenize = x
   (
-    [ x(Value['function']),
+    [ x(Value.url)
+    , OR
+    , x(Value['function']),
     , OR
     , x(Value.comma)
     , OR

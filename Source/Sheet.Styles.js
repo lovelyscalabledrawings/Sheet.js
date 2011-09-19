@@ -26,13 +26,13 @@ var CSS = Sheet.Properties = {
   backgroundPositionX:  ['percentage', 'center', 'left', 'right', 'length', 'inherit'],
   backgroundPositionY:  ['percentage', 'center', 'top', 'bottom', 'length', 'inherit'],
    
-  textShadow:           [['textShadowBlur', 'textShadowOffsetX', 'textShadowOffsetY', 'textShadowColor'], 'multiple'],
+  textShadow:           [['textShadowBlur', 'textShadowOffsetX', 'textShadowOffsetY', 'textShadowColor'], 'multiple', 'virtual'],
   textShadowBlur:       ['length'],
   textShadowOffsetX:    ['length'],
   textShadowOffsetY:    ['length'],
   textShadowColor:      ['color'],
                         
-  boxShadow:            [['boxShadowBlur', 'boxShadowOffsetX', 'boxShadowOffsetY', 'boxShadowColor'], 'multiple'],
+  boxShadow:            [['boxShadowBlur', 'boxShadowOffsetX', 'boxShadowOffsetY', 'boxShadowColor'], 'multiple', 'virtual'],
   boxShadowBlur:        ['length'],
   boxShadowOffsetX:     ['length'],
   boxShadowOffsetY:     ['length'],
@@ -43,12 +43,7 @@ var CSS = Sheet.Properties = {
   outlineStyle:         ['dotted', 'dashed', 'solid', 'double', 'groove', 'reidge', 'inset', 'outset'],
   outlineColor:         ['color'],
                         
-  font:                 [[
-                          ['fontStyle', 'fontVariant', 'fontWeight'], 
-                          'fontSize', 
-                          ['lineHeight'], 
-                          'fontFamily'
-                        ]],
+  font:                 [[['fontStyle', 'fontVariant', 'fontWeight'], 'fontSize', ['lineHeight'], 'fontFamily']],
   fontStyle:            ['normal', 'italic', 'oblique', 'inherit'],
   fontVariant:          ['normal', 'small-caps', 'inherit'],
   fontWeight:           ['normal', 'number', 'bold', 'inherit'],
@@ -62,6 +57,13 @@ var CSS = Sheet.Properties = {
   textAlign:            ['left', 'right', 'center', 'justify'],
   textIdent:            ['length', 'percentage'],                 
   lineHeight:           ['normal', 'number', 'length', 'percentage'],
+  
+  listStyle:            [['list-style-type', 'list-style-position', 'list-style-image']],
+  listStyleType:        ['disc', 'circle', 'square', 'decimal', 'decimal-leading-zero', 'lower-roman', 'upper-roman', 
+                         'lower-greek', 'lower-latin', 'upper-latin', 'armenian', 'georgian', 'lower-alpha', 'none', 
+                         'upper-alpha', 'inherit'],
+  listStyleImage:       ['url', 'none', 'inherit'],
+  listStylePosition:    ['inside', 'outside', 'none'],
   
   height:               ['length', 'auto'],
   maxHeight:            ['length', 'auto'],

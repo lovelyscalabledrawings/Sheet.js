@@ -64,57 +64,73 @@ provides : Sheet.Property
     the order.
   */
   
-  Property.shorthand = function(properties, keywords, context) {
+  Property.shorthand = function(properties, keywords, context, multiple) {
     var index, r = 0;
     for (var i = 0, property; property = properties[i++];) if (!property.push) r++;
-    return function() {
-      var resolved = [], values = [], used = {}, start = 0, group, k = 0, l = arguments.length;
-      for (var i = 0, argument; argument = arguments[i]; i++) {
-        var property = properties[k];
-        if (!property) return false;
-        if ((group = (property.push && property))) property = properties[k + 1];
-        if (property) {
-          if ((values[i] = context[property](argument)) !== false) k++
-          else property = false
+    return function shorthand () {
+      var resolved = [], values = [], used = {}, args = arguments;
+      var argument = args[0], start = 0, group, k = 0, l = args.length;
+      for (var m = 0;; m++) {
+        // handle multiple values 
+        if (argument.push && ((args = arguments[m]) != null)) {
+          if (!args.push) args = [args];
+          l = args.length;
+          if (m > 0) {
+            if (m == 1) result = [result];
+            result.push(shorthand.apply(this.push ? [] : {}, args));
+            continue;
+          } 
         }
-        if (group) {
-          if (!property) {
-            if (!index) index = Property.index(properties, context)
-            if ((property = index[k][argument])) {
-              if (used[property]) return false;
-              else used[property] = true;
-              values[i] = argument;
+        if (m > 0) return result;
+        // handle on set of values
+        for (var i = 0, arg; i < l; i++) {
+          arg = (i > 0) ? args[i] : argument;
+          var property = properties[k];
+          if (!property) return false;
+          if ((group = (property.push && property))) property = properties[k + 1];
+          if (property) {
+            if ((values[i] = context[property](arg)) !== false) k++
+            else property = false
+          }
+          if (group) {
+            if (!property) {
+              if (!index) index = Property.index(properties, context)
+              if ((property = index[k][arg])) {
+                if (used[property]) return false;
+                else used[property] = true;
+                values[i] = arg;
+              }
+            }
+            if ((property && !used[property]) || (i == l - 1)) {
+              if (i - start > group.length) return false;
+              for (var j = start, end = (i + +!property); j < end; j++) 
+                if (!resolved[j])
+                  for (var n = 0, optional; optional = group[n++];)
+                    if (!used[optional])
+                      if ((values[j] = context[optional](args[j])) !== false) {
+                        resolved[j] = optional;
+                        used[optional] = true
+                        break;
+                      }
+              start = i;
+              k++;
             }
           }
-          if ((property && !used[property]) || (i == l - 1)) {
-            if (i - start > group.length) return false;
-            for (var j = start, end = (i + +!property); j < end; j++) 
-              if (!resolved[j])
-                for (var m = 0, optional; optional = group[m++];)
-                  if (!used[optional])
-                    if ((values[j] = context[optional](arguments[j])) !== false) {
-                      resolved[j] = optional;
-                      used[optional] = true
-                      break;
-                    }
-            start = i;
-            k++;
+          if (resolved[i] == null) {
+            resolved[i] = property;
+            if (values[i] == false) values[i] = arg;
           }
         }
-        if (resolved[i] == null) {
-          resolved[i] = property;
-          if (values[i] == false) values[i] = argument;
+        if (i < r) return false;
+        if (!result) var result = this == window || this.$root ? {} : this;
+        for (var i = 0; i < l; i++) {
+          var property = resolved[i];
+          if (!property) return false;
+          var value = values[i];
+          if (value === false) return false;
+          if (result.push) result.push(value);
+          else result[property] = value;
         }
-      }
-      if (i < r) return false;
-      if (!result) var result = this == window || this.$root ? {} : this;
-      for (var i = 0; i < l; i++) {
-        var property = resolved[i];
-        if (!property) return false;
-        var value = values[i];
-        if (value === false) return false;
-        if (result.push) result.push(value);
-        else result[property] = value;
       }
       return result;
     };
@@ -153,28 +169,27 @@ provides : Sheet.Property
       }
   };
   
-  /* 
-    Multiple value property accepts arrays as arguments
-    as well as regular stuff
-  */
-  
-  Property.multiple = function(arg) {
-    //if (arg.push)
-  }
-  
-  Property.compile = function(definition, context) {
+  Property.compile = function(definition, context, type) {
     var properties, keywords, types;
     for (var i = 0, bit; bit = definition[i++];) {
       if (bit.push) properties = bit;
       else if (bit.indexOf) {
         if (!Type[bit]) {
           if (!keywords) keywords = {};
-          keywords[bit] = 1;
+          switch (bit) {
+            case 'collection':
+              type = 'collection';
+              break;
+            case 'multiple':
+              var multiple = true;
+            default:
+              keywords[bit] = 1;
+          }
         } else types ? types.push(bit) : (types = [bit]);
       } else options = bit;
     }
-    var type = properties ? (keywords && keywords.collection ? 'collection' : 'shorthand') : 'simple'
-    var property = Property[type](properties || types, keywords, context);
+    if (!type) type = properties ? 'shorthand' : 'simple';
+    var property = Property[type](properties || types, keywords, context, multiple);
     if (keywords) property.keywords = keywords;
     if (properties) {
       var props = [];

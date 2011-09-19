@@ -222,7 +222,37 @@ var Examples = {
     '-55.5% bottom repeat-y url #ccc fixed': false,
     '-55.5% bottom repeat-y url("#pic") #zzz fixed': false,
     '-55.5% bottom repeat-y url("#pic") #ccc fixes': false,
-    '-55.5% bottom repeat-y url("#pic") #ccc fixed fixed': false
+    '-55.5% bottom repeat-y url("#pic") #ccc fixed fixed': false,
+    
+    
+    '#cc0, #cc2': [
+      { 
+        backgroundColor: Type.color('#cc0')
+      },
+      { 
+        backgroundColor: Type.color('#cc2')
+      }
+    ],
+    'url(decoration.png) left top no-repeat, url(ribbon.png) right bottom repeat-x, url(old_paper.jpg) left top no-repeat': [
+      {
+        backgroundImage: new Type.url('decoration.png'),
+        backgroundPositionX: 'left',
+        backgroundPositionY: 'top',
+        backgroundRepeat: 'no-repeat'
+      },
+      {
+        backgroundImage: new Type.url('ribbon.png'),
+        backgroundPositionX: 'right',
+        backgroundPositionY: 'bottom',
+        backgroundRepeat: 'repeat-x'
+      },
+      {
+        backgroundImage: new Type.url('old_paper.jpg'),
+        backgroundPositionX: 'left',
+        backgroundPositionY: 'top',
+        backgroundRepeat: 'no-repeat'
+      }
+    ]
   },
   
   padding: {

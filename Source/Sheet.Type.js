@@ -6,7 +6,7 @@ authors   : Yaroslaff Fedin
 
 license   : MIT
 
-requires : ["Sheet.Type", "Color/Color"]
+requires : ["Sheet", "Color/Color"]
 
 provides : Sheet.Type
 ...

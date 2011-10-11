@@ -71,6 +71,7 @@ var Examples = {
   'a != b': ['a', '!=', 'b'],
   'a ~= b': ['a', '~=', 'b'],
   'not screen and (pixel--moz-density: 3)': ['not', 'screen', 'and', ['pixel--moz-density:', 3]],
+  'count()': {count: []},
   'count(#publications[a=1]::items > li ~ a[href])': {count: ['#publications[a=1]::items', '>', 'li', '~', 'a[href]']},
   'count(#publications[a=1]::items !> li !~ a[href])': {count: ['#publications[a=1]::items', '!>', 'li', '!~', 'a[href]']},
   'count(#publications[a=1]::items ++ li ~~ a[href])': {count: ['#publications[a=1]::items', '+', '+', 'li', '~~', 'a[href]']},

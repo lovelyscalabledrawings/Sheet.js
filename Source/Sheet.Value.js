@@ -33,7 +33,7 @@ provides : Sheet.Value
         var obj = {};
         obj[found[names.src]] = text.match(Value.string) ? text.substr(1, text.length - 2) : text
         scope.push(obj);
-      } else if ((text = found[names._arguments])) {
+      } else if ((text = found[names._arguments]) != null) {
         var translated = Value.translate(text, true), func = found[names['function']];
         for (var j = 0, bit; bit = translated[j]; j++) if (bit && bit.length == 1) translated[j] = bit[0];
         if (func && ((operator = operators[func]) == null)) {

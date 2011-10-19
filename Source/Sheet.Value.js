@@ -33,8 +33,8 @@ provides : Sheet.Value
         var obj = {};
         obj[found[names.src]] = text.match(Value.string) ? text.substr(1, text.length - 2) : text
         scope.push(obj);
-      } else if ((text = found[names._arguments]) != null) {
-        var translated = Value.translate(text, true), func = found[names['function']];
+      } else if ((text = found[names.fn_arguments]) != null) {
+        var translated = Value.translate(text, true), func = found[names.fn];
         for (var j = 0, bit; bit = translated[j]; j++) if (bit && bit.length == 1) translated[j] = bit[0];
         if (func && ((operator = operators[func]) == null)) {
           var obj = {};
@@ -80,9 +80,13 @@ provides : Sheet.Value
   var x = combineRegExp
   var OR = '|'
   var rRound = "(?:[^()]|\\((?:[^()]|\\((?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\))*\\))*\\))";
+  var rCurly = "(?:[^{}]|\\{(?:[^{}]|\\{(?:[^{}]|\\{(?:[^{}]|\\{[^{}]*\\})*\\})*\\})*\\})"
 
-  ;(Value['function'] = x("([-_a-zA-Z0-9]*)\\((" + rRound + "*)\\)"))
-  .names = [               'function',       '_arguments']
+  ;(Value.fn = x("([-_a-zA-Z0-9]*)\\s*\\((" + rRound + "*)\\)"))
+  .names = [               'fn',       'fn_arguments']
+  
+  ;(Value.block = x("\\s*\\{\\s*(?:\\|\\s*([^|]*)\\|\\s*)?\\s*((?:"+rCurly+")*)\\s*\\}"))
+  .names = [                'block_arguments',                'block']
   
   ;(Value.integer = x(/[-+]?\d+/))
   ;(Value['float'] = x(/[-+]?(?:\d+\.\d*|\d*\.\d+)/))
@@ -104,7 +108,9 @@ provides : Sheet.Value
   (
     [ x(Value.url)
     , OR
-    , x(Value['function']),
+    , x(Value.fn),
+    , OR
+    , x(Value.block),
     , OR
     , x(Value.comma)
     , OR

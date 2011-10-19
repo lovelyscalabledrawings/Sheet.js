@@ -70,7 +70,7 @@ var Examples = {
   '1 1, 1 3': [[1, 1], [1, 3]],
   'a != b': ['a', '!=', 'b'],
   'a ~= b': ['a', '~=', 'b'],
-  'not screen and (pixel--moz-density: 3)': ['not', 'screen', 'and', ['pixel--moz-density:', 3]],
+  'not screen and (pixel--moz-density: 3)': ['not', 'screen', {'and': ['pixel--moz-density:', 3]}],
   'count()': {count: []},
   'count(#publications[a=1]::items > li ~ a[href])': {count: ['#publications[a=1]::items', '>', 'li', '~', 'a[href]']},
   'count(#publications[a=1]::items !> li !~ a[href])': {count: ['#publications[a=1]::items', '!>', 'li', '!~', 'a[href]']},
@@ -91,6 +91,9 @@ var Examples = {
   'lokal(1px solid)': {lokal: [{number: 1, unit: 'px'}, 'solid']},
   'uzl(1px solid)': {uzl: [{number: 1, unit: 'px'}, 'solid']},
   'rgba(1, 1, 1, 40%)': {rgba: [1, 1, 1, {number: 40, unit: '%'}]},
+  //'each(items) { hello() }': {each: ['items', {hello: []}]},
+  //'each(items) { hello(), bye() }': {each: ['items', [{hello: []}, {bye: []}]]},
+  //'each(items) { hello() + bye() }': {each: ['items', [{hello: []}, '+', {bye: []}]]},
   '1em, 2em 3em, 4em 5em 6em, 7em 9em 3pt auto': [
     [{number: 1, unit: 'em'}], 
     [{number: 2, unit: 'em'}, {number: 3, unit: 'em'}], 

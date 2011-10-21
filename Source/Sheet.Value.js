@@ -85,9 +85,6 @@ provides : Sheet.Value
   ;(Value.fn = x("([-_a-zA-Z0-9]*)\\s*\\((" + rRound + "*)\\)"))
   .names = [               'fn',       'fn_arguments']
   
-  ;(Value.block = x("\\s*\\{\\s*(?:\\|\\s*([^|]*)\\|\\s*)?\\s*((?:"+rCurly+")*)\\s*\\}"))
-  .names = [                'block_arguments',                'block']
-  
   ;(Value.integer = x(/[-+]?\d+/))
   ;(Value['float'] = x(/[-+]?(?:\d+\.\d*|\d*\.\d+)/))
   ;(Value.length = x(['(', Value['float'],  OR, Value['integer'], ')', '(em|px|pt|%|fr|deg|(?=$|[^a-zA-Z0-9.]))']))
@@ -100,7 +97,7 @@ provides : Sheet.Value
   ;(Value.stringDouble = x(/"((?:[^"]|\\")*)"/)).names = ['dstring']
   ;(Value.stringSingle = x(/'((?:[^']|\\')*)'/)).names = ['sstring']
   ;(Value.string = x([Value.stringSingle, OR, Value.stringDouble]))
-  ;(Value.token = x(/[^$,\s\/())]+/, "token"))
+  ;(Value.token = x(/[^$,\s\/()]+/, "token"))
   ;(Value.url = x(['(url|local|src)\\((.*?)\\)']))
   .names = [        'src',        'href'];
   
@@ -109,8 +106,6 @@ provides : Sheet.Value
     [ x(Value.url)
     , OR
     , x(Value.fn),
-    , OR
-    , x(Value.block),
     , OR
     , x(Value.comma)
     , OR

@@ -17,9 +17,7 @@ requires : SheetParser.CSS
 var UNDEF = {undefined:1}
 
 /*<CommonJS>*/
-var SheetParser = UNDEF[typeof require]
-	?	exports.SheetParser
-	:	require('./SheetParser.CSS').SheetParser
+var SheetParser = exports.SheetParser || require('./SheetParser.CSS').SheetParser
 
 exports.Sheet = Sheet
 /*</CommonJS>*/

@@ -15,9 +15,8 @@ provides : Sheet.Value
 
 (function(exports) {
   /*<CommonJS>*/
-  var combineRegExp = (typeof module === 'undefined' || !module.exports)
-    ?  exports.combineRegExp
-    :  require('./sg-regex-tools').combineRegExp
+  if (typeof combineRegExp == 'undefined') 
+  var combineRegExp = exports.combineRegExp || require('./sg-regex-tools').combineRegExp
   var Sheet = exports.Sheet
   /*</CommonJS>*/
   

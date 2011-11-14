@@ -18,9 +18,7 @@ var UNDEF = {undefined:1}
 if (!exports.SheetParser) exports.SheetParser = {}
 
 /*<CommonJS>*/
-var combineRegExp = (UNDEF[typeof module] || !module.exports)
-	?	exports.combineRegExp
-	:	require('./sg-regex-tools').combineRegExp
+var combineRegExp = exports.combineRegExp || require('./sg-regex-tools').combineRegExp
 var SheetParser = exports.SheetParser
 /*</CommonJS>*/
 
